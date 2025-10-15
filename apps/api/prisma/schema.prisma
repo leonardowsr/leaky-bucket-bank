@@ -1,0 +1,57 @@
+generator client {
+  provider        = "prisma-client"
+  output          = "./generated"
+  previewFeatures = ["driverAdapters"]
+  moduleFormat    = "cjs"
+}
+
+datasource db {
+  provider = "postgres"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       String @id @default(uuid())
+  name     String
+  email    String @unique
+  password String
+
+  tokenCount  Int      @default(10)
+  usedTokenAt DateTime @default(now())
+
+  accounts Account[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Account {
+  id            String @id @default(uuid())
+  accountNumber String @unique
+  balance       Int
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+
+  sentTransactions     Transaction[] @relation("SentTransactions")
+  receivedTransactions Transaction[] @relation("ReceivedTransactions")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime
+}
+
+model Transaction {
+  id     String @id @default(uuid())
+  amount Int // Corrigido de "ammount" e usando Float para valores monetários
+
+  // Relação: Transação de uma conta...
+  sender   Account @relation("SentTransactions", fields: [senderId], references: [id])
+  senderId String
+
+  // ...para outra conta.
+  receiver   Account @relation("ReceivedTransactions", fields: [receiverId], references: [id])
+  receiverId String
+
+  createdAt DateTime @default(now()) // Essencial para extratos
+}

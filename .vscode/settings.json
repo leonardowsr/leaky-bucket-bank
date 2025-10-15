@@ -1,0 +1,9 @@
+{
+  "workbench.colorCustomizations": {
+    "activityBar.background": "#580C3E",
+    "titleBar.activeBackground": "#7B1157",
+    "titleBar.activeForeground": "#FFFCFE"
+  },
+  "prettier.enable": false,
+  "biome.enabled": true
+}

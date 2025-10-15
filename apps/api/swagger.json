@@ -1,0 +1,211 @@
+{
+	"openapi": "3.0.0",
+	"paths": {
+		"/auth/login": {
+			"post": {
+				"operationId": "AuthController_login",
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/LoginDto"
+							}
+						}
+					}
+				},
+				"responses": {
+					"201": {
+						"description": ""
+					}
+				},
+				"tags": ["auth"]
+			}
+		},
+		"/auth/register": {
+			"post": {
+				"operationId": "AuthController_register",
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/RegisterDto"
+							}
+						}
+					}
+				},
+				"responses": {
+					"201": {
+						"description": ""
+					}
+				},
+				"tags": ["auth"]
+			}
+		},
+		"/auth/refresh-token": {
+			"post": {
+				"operationId": "AuthController_refreshToken",
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/RefreshTokenDto"
+							}
+						}
+					}
+				},
+				"responses": {
+					"201": {
+						"description": ""
+					}
+				},
+				"tags": ["auth"]
+			}
+		},
+		"/users": {
+			"get": {
+				"operationId": "UsersController_findAll",
+				"parameters": [
+					{
+						"name": "limit",
+						"required": false,
+						"in": "path",
+						"schema": {
+							"type": "number"
+						}
+					},
+					{
+						"name": "page",
+						"required": false,
+						"in": "path",
+						"schema": {
+							"type": "number"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": ""
+					}
+				},
+				"security": [
+					{
+						"JWT-auth": []
+					}
+				],
+				"tags": ["users"]
+			}
+		},
+		"/users/me": {
+			"get": {
+				"operationId": "UsersController_findMe",
+				"parameters": [],
+				"responses": {
+					"200": {
+						"description": ""
+					}
+				},
+				"security": [
+					{
+						"JWT-auth": []
+					}
+				],
+				"tags": ["users"]
+			}
+		},
+		"/users/{id}": {
+			"get": {
+				"operationId": "UsersController_findOne",
+				"parameters": [
+					{
+						"name": "id",
+						"required": true,
+						"in": "path",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": ""
+					}
+				},
+				"security": [
+					{
+						"JWT-auth": []
+					}
+				],
+				"tags": ["users"]
+			}
+		}
+	},
+	"info": {
+		"title": "Bank Api",
+		"description": "API para gerenciamento bancário",
+		"version": "1.0",
+		"contact": {}
+	},
+	"tags": [],
+	"servers": [],
+	"components": {
+		"securitySchemes": {
+			"JWT-auth": {
+				"scheme": "bearer",
+				"bearerFormat": "JWT",
+				"type": "http",
+				"description": "Enter your token here",
+				"in": "header"
+			}
+		},
+		"schemas": {
+			"LoginDto": {
+				"type": "object",
+				"properties": {
+					"email": {
+						"type": "string",
+						"example": "user@example.com"
+					},
+					"password": {
+						"type": "string",
+						"example": "strongPassword123"
+					}
+				},
+				"required": ["email", "password"]
+			},
+			"RegisterDto": {
+				"type": "object",
+				"properties": {
+					"name": {
+						"type": "string",
+						"example": "John Doe"
+					},
+					"email": {
+						"type": "string",
+						"example": "user@example.com"
+					},
+					"password": {
+						"type": "string",
+						"example": "strongPassword123"
+					}
+				},
+				"required": ["name", "email", "password"]
+			},
+			"RefreshTokenDto": {
+				"type": "object",
+				"properties": {
+					"refreshToken": {
+						"type": "string",
+						"example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+					}
+				},
+				"required": ["refreshToken"]
+			}
+		}
+	}
+}
