@@ -21,8 +21,9 @@ model User {
 
   accounts Account[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 }
 
 model Account {
@@ -36,20 +37,18 @@ model Account {
   sentTransactions     Transaction[] @relation("SentTransactions")
   receivedTransactions Transaction[] @relation("ReceivedTransactions")
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  deletedAt DateTime
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 }
 
 model Transaction {
   id     String @id @default(uuid())
-  amount Int // Corrigido de "ammount" e usando Float para valores monetários
+  amount Int
 
-  // Relação: Transação de uma conta...
   sender   Account @relation("SentTransactions", fields: [senderId], references: [id])
   senderId String
 
-  // ...para outra conta.
   receiver   Account @relation("ReceivedTransactions", fields: [receiverId], references: [id])
   receiverId String
 

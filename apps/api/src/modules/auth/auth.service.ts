@@ -1,6 +1,6 @@
 import { configuration } from "@api/config/configuration";
 import { RefreshTokenPayload } from "@api/interfaces/auth";
-import { PrismaService } from "@api/modules/prisma/prisma.service";
+import { PrismaService } from "@api/modules/prismaModule/prisma.service";
 import {
 	ConflictException,
 	Injectable,
@@ -55,13 +55,25 @@ export class AuthService {
 		if (emailExists) {
 			throw new ConflictException("Email já está em uso");
 		}
+		await this.prisma.$transaction(async (ctx) => {
+			const user = await ctx.user.create({
+				data: {
+					email: registerDto.email,
+					password: passwordHashed,
+					name: registerDto.name,
+				},
+			});
+			const randomAccountNumber = Math.floor(
+				100000 + Math.random() * 900000,
+			).toString();
 
-		await this.prisma.user.create({
-			data: {
-				email: registerDto.email,
-				password: passwordHashed,
-				name: registerDto.name,
-			},
+			await ctx.account.create({
+				data: {
+					accountNumber: randomAccountNumber,
+					balance: 100,
+					userId: user.id,
+				},
+			});
 		});
 
 		return { success: true };

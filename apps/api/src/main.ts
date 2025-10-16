@@ -2,12 +2,27 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { ValidationPipe } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
+import { MicroserviceOptions, Transport } from "@nestjs/microservices";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { AppModule } from "./app.module";
 import { configuration } from "./config/configuration";
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
+
+	app.connectMicroservice<MicroserviceOptions>({
+		transport: Transport.RMQ,
+		options: {
+			queue: configuration.rabbitmq.queue.transactions,
+			urls: [configuration.rabbitmq.url],
+			queueOptions: {
+				durable: true,
+			},
+			noAck: false,
+		},
+	});
+
+	await app.startAllMicroservices();
 
 	app.useGlobalPipes(
 		new ValidationPipe({

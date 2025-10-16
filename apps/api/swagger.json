@@ -1,6 +1,100 @@
 {
 	"openapi": "3.0.0",
 	"paths": {
+		"/transaction": {
+			"post": {
+				"operationId": "TransactionController_create",
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/CreateTransactionDto"
+							}
+						}
+					}
+				},
+				"responses": {
+					"201": {
+						"description": ""
+					}
+				},
+				"security": [
+					{
+						"JWT-auth": []
+					}
+				],
+				"tags": ["Transaction"]
+			},
+			"get": {
+				"operationId": "TransactionController_findAll",
+				"parameters": [],
+				"responses": {
+					"200": {
+						"description": ""
+					}
+				},
+				"security": [
+					{
+						"JWT-auth": []
+					}
+				],
+				"tags": ["Transaction"]
+			}
+		},
+		"/transaction/{id}/list-by-account": {
+			"get": {
+				"operationId": "TransactionController_findAllByAccount",
+				"parameters": [
+					{
+						"name": "id",
+						"required": true,
+						"in": "path",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": ""
+					}
+				},
+				"security": [
+					{
+						"JWT-auth": []
+					}
+				],
+				"tags": ["Transaction"]
+			}
+		},
+		"/transaction/{id}": {
+			"get": {
+				"operationId": "TransactionController_findOne",
+				"parameters": [
+					{
+						"name": "id",
+						"required": true,
+						"in": "path",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": ""
+					}
+				},
+				"security": [
+					{
+						"JWT-auth": []
+					}
+				],
+				"tags": ["Transaction"]
+			}
+		},
 		"/auth/login": {
 			"post": {
 				"operationId": "AuthController_login",
@@ -69,7 +163,7 @@
 		},
 		"/users": {
 			"get": {
-				"operationId": "UsersController_findAll",
+				"operationId": "UserController_findAll",
 				"parameters": [
 					{
 						"name": "limit",
@@ -103,7 +197,7 @@
 		},
 		"/users/me": {
 			"get": {
-				"operationId": "UsersController_findMe",
+				"operationId": "UserController_findMe",
 				"parameters": [],
 				"responses": {
 					"200": {
@@ -120,7 +214,7 @@
 		},
 		"/users/{id}": {
 			"get": {
-				"operationId": "UsersController_findOne",
+				"operationId": "UserController_findOne",
 				"parameters": [
 					{
 						"name": "id",
@@ -143,6 +237,149 @@
 				],
 				"tags": ["users"]
 			}
+		},
+		"/account": {
+			"post": {
+				"operationId": "AccountController_create",
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/CreateAccountDto"
+							}
+						}
+					}
+				},
+				"responses": {
+					"201": {
+						"description": ""
+					}
+				},
+				"security": [
+					{
+						"JWT-auth": []
+					}
+				],
+				"tags": ["account"]
+			},
+			"get": {
+				"operationId": "AccountController_findAll",
+				"parameters": [],
+				"responses": {
+					"200": {
+						"description": ""
+					}
+				},
+				"security": [
+					{
+						"JWT-auth": []
+					}
+				],
+				"tags": ["account"]
+			}
+		},
+		"/account/me": {
+			"get": {
+				"operationId": "AccountController_findAllByUser",
+				"parameters": [],
+				"responses": {
+					"200": {
+						"description": ""
+					}
+				},
+				"security": [
+					{
+						"JWT-auth": []
+					}
+				],
+				"tags": ["account"]
+			}
+		},
+		"/account/{id}": {
+			"get": {
+				"operationId": "AccountController_findOne",
+				"parameters": [
+					{
+						"name": "id",
+						"required": true,
+						"in": "path",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": ""
+					}
+				},
+				"security": [
+					{
+						"JWT-auth": []
+					}
+				],
+				"tags": ["account"]
+			},
+			"patch": {
+				"operationId": "AccountController_update",
+				"parameters": [
+					{
+						"name": "id",
+						"required": true,
+						"in": "path",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/UpdateAccountDto"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": ""
+					}
+				},
+				"security": [
+					{
+						"JWT-auth": []
+					}
+				],
+				"tags": ["account"]
+			},
+			"delete": {
+				"operationId": "AccountController_remove",
+				"parameters": [
+					{
+						"name": "id",
+						"required": true,
+						"in": "path",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": ""
+					}
+				},
+				"security": [
+					{
+						"JWT-auth": []
+					}
+				],
+				"tags": ["account"]
+			}
 		}
 	},
 	"info": {
@@ -164,6 +401,27 @@
 			}
 		},
 		"schemas": {
+			"CreateTransactionDto": {
+				"type": "object",
+				"properties": {
+					"amount": {
+						"type": "number",
+						"example": 10000,
+						"description": "Amount em centavos"
+					},
+					"senderId": {
+						"type": "string",
+						"example": "0a422f47-0c11-4961-951e-01250933e20c",
+						"description": "ID do account remetente"
+					},
+					"receiverId": {
+						"type": "string",
+						"example": "cdf7b6eb-adeb-4df1-a64e-3faeae120628",
+						"description": "ID do account destinatário"
+					}
+				},
+				"required": ["amount", "senderId", "receiverId"]
+			},
 			"LoginDto": {
 				"type": "object",
 				"properties": {
@@ -205,6 +463,31 @@
 					}
 				},
 				"required": ["refreshToken"]
+			},
+			"CreateAccountDto": {
+				"type": "object",
+				"properties": {
+					"userId": {
+						"type": "string",
+						"example": "550e8400-e29b-41d4-a716-446655440000",
+						"description": "ID do usuário"
+					},
+					"accountNumber": {
+						"type": "string",
+						"example": "123456",
+						"description": "Número da conta"
+					},
+					"balance": {
+						"type": "number",
+						"example": 100000,
+						"description": "Saldo da conta em centavos"
+					}
+				},
+				"required": ["userId", "accountNumber", "balance"]
+			},
+			"UpdateAccountDto": {
+				"type": "object",
+				"properties": {}
 			}
 		}
 	}
