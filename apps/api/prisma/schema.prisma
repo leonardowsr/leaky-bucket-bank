@@ -19,7 +19,7 @@ model User {
   tokenCount  Int      @default(10)
   usedTokenAt DateTime @default(now())
 
-  accounts Account[]
+  account Account?
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -32,7 +32,7 @@ model Account {
   balance       Int
 
   user   User   @relation(fields: [userId], references: [id])
-  userId String
+  userId String @unique
 
   sentTransactions     Transaction[] @relation("SentTransactions")
   receivedTransactions Transaction[] @relation("ReceivedTransactions")
@@ -52,5 +52,13 @@ model Transaction {
   receiver   Account @relation("ReceivedTransactions", fields: [receiverId], references: [id])
   receiverId String
 
-  createdAt DateTime @default(now()) // Essencial para extratos
+  status transactionStatus @default(pending)
+
+  createdAt DateTime @default(now())
+}
+
+enum transactionStatus {
+  approved
+  recused
+  pending
 }

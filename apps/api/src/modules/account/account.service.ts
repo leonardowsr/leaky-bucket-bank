@@ -1,18 +1,39 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
-import { PrismaService } from "../prismaModule/prisma.service";
+import {
+	ConflictException,
+	Injectable,
+	NotFoundException,
+} from "@nestjs/common";
+import { PrismaService } from "../_prisma/prisma.service";
 import { CreateAccountDto, UpdateAccountDto } from "./dto/account.dto";
 
 @Injectable()
 export class AccountService {
 	constructor(private prisma: PrismaService) {}
-	create(createAccountDto: CreateAccountDto) {
+	async create(createAccountDto: CreateAccountDto, userId: string) {
+		const user = await this.prisma.user.findUnique({
+			where: { id: userId },
+		});
+		if (!user) {
+			throw new NotFoundException("User não encontrado");
+		}
+
+		// Verificar se o usuário já possui uma conta
+		const existingAccount = await this.prisma.account.findUnique({
+			where: { userId },
+		});
+
+		if (existingAccount) {
+			throw new ConflictException(
+				"Usuário já possui uma conta. Cada usuário pode ter apenas uma conta.",
+			);
+		}
+
 		const randomAccountNumber = Math.floor(100000 + Math.random() * 900000);
-		createAccountDto.accountNumber = randomAccountNumber.toString();
 
 		return this.prisma.account.create({
 			data: {
-				accountNumber: createAccountDto.accountNumber,
-				userId: createAccountDto.userId,
+				accountNumber: randomAccountNumber.toString(),
+				userId: userId,
 				balance: createAccountDto.balance,
 			},
 		});
@@ -36,6 +57,24 @@ export class AccountService {
 				userId: true,
 			},
 		});
+	}
+
+	async findMe(userId: string) {
+		const account = await this.prisma.account.findUnique({
+			where: { userId },
+			select: {
+				accountNumber: true,
+				balance: true,
+				id: true,
+				userId: true,
+			},
+		});
+
+		if (!account) {
+			throw new NotFoundException("Conta não encontrada para este usuário");
+		}
+
+		return account;
 	}
 
 	findOne(id: string) {

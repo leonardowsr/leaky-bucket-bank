@@ -1,14 +1,18 @@
-import { PrismaService } from "@api/modules/prismaModule/prisma.service";
+import { PrismaService } from "@api/modules/_prisma/prisma.service";
 import { Injectable, NotFoundException } from "@nestjs/common";
+import { UserQueryDto } from "./dto/user-query.dto";
 
 @Injectable()
 export class UserService {
 	constructor(private prisma: PrismaService) {}
 
-	async findAll(query: { page?: number; limit?: number }) {
+	async findAll(query: UserQueryDto) {
+		const page = query.page ?? 1;
+		const limit = query.limit ?? 10;
+
 		const users = await this.prisma.user.findMany({
-			skip: (query.page || 1 - 1) * (query.limit || 10),
-			take: query.limit || 10,
+			skip: (page - 1) * limit,
+			take: limit,
 			orderBy: {
 				createdAt: "desc",
 			},

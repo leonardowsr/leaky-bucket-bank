@@ -1,6 +1,6 @@
 import { configuration } from "@api/config/configuration";
 import { RefreshTokenPayload } from "@api/interfaces/auth";
-import { PrismaService } from "@api/modules/prismaModule/prisma.service";
+import { PrismaService } from "@api/modules/_prisma/prisma.service";
 import {
 	ConflictException,
 	Injectable,

@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/complexity/useLiteralKeys: no need */
 import {
 	CanActivate,
 	ExecutionContext,
@@ -34,7 +35,7 @@ export class AuthGuard implements CanActivate {
 
 		try {
 			const payload = await this.jwtService.verifyAsync(token);
-			request.user = payload;
+			request["user"] = payload;
 		} catch (_err) {
 			throw new UnauthorizedException("Token inválido");
 		}

@@ -1,4 +1,4 @@
-import { PrismaModule } from "@api/modules/prismaModule/prisma.module";
+import { PrismaModule } from "@api/modules/_prisma/prisma.module";
 import { Module } from "@nestjs/common";
 import { UserController } from "./user.controller";
 import { UserService } from "./user.service";

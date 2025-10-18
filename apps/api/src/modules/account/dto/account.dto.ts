@@ -1,21 +1,19 @@
+import { PartialType } from "@nestjs/mapped-types";
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNumber, IsString, IsUUID } from "class-validator";
+import { IsNumber, Min } from "class-validator";
 
 export class CreateAccountDto {
 	@ApiProperty({
-		example: "550e8400-e29b-41d4-a716-446655440000",
-		description: "ID do usuário",
+		example: 100000,
+		description: "Saldo inicial da conta em centavos",
+		minimum: 0,
 	})
-	@IsUUID("4", { message: "userId deve ser um UUID válido" })
-	userId: string;
-
-	@ApiProperty({ example: "123456", description: "Número da conta" })
-	@IsString({ message: "Account number deve ser uma string válida" })
-	accountNumber?: string;
-
-	@ApiProperty({ example: 100000, description: "Saldo da conta em centavos" })
-	@IsNumber({}, { message: "Balance deve ser um número válido" })
+	@IsNumber(
+		{ allowInfinity: false, allowNaN: false },
+		{ message: "Balance deve ser um número válido" },
+	)
+	@Min(0, { message: "Balance não pode ser negativo" })
 	balance: number;
 }
 
-export class UpdateAccountDto {}
+export class UpdateAccountDto extends PartialType(CreateAccountDto) {}

@@ -39,16 +39,18 @@
 	"dependencies": {
 		"@nestjs/jwt": "^11.0.1",
 		"@nestjs/mapped-types": "*",
+		"@scalar/nestjs-api-reference": "^1.0.5",
 		"dotenv": "^17.2.2",
 		"zod": "^4.1.11"
 	},
 	"devDependencies": {
-		"turbo": "^2.5.4",
 		"@biomejs/biome": "^2.2.0",
+		"@types/bun": "^1.2.6",
 		"husky": "^9.1.7",
 		"lint-staged": "^16.1.2",
+		"orval": "^7.13.2",
 		"tsdown": "^0.15.5",
-		"@types/bun": "^1.2.6"
+		"turbo": "^2.5.4"
 	},
 	"lint-staged": {
 		"*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}": [

@@ -1,106 +1,14 @@
 {
 	"openapi": "3.0.0",
 	"paths": {
-		"/transaction": {
-			"post": {
-				"operationId": "TransactionController_create",
-				"parameters": [],
-				"requestBody": {
-					"required": true,
-					"content": {
-						"application/json": {
-							"schema": {
-								"$ref": "#/components/schemas/CreateTransactionDto"
-							}
-						}
-					}
-				},
-				"responses": {
-					"201": {
-						"description": ""
-					}
-				},
-				"security": [
-					{
-						"JWT-auth": []
-					}
-				],
-				"tags": ["Transaction"]
-			},
-			"get": {
-				"operationId": "TransactionController_findAll",
-				"parameters": [],
-				"responses": {
-					"200": {
-						"description": ""
-					}
-				},
-				"security": [
-					{
-						"JWT-auth": []
-					}
-				],
-				"tags": ["Transaction"]
-			}
-		},
-		"/transaction/{id}/list-by-account": {
-			"get": {
-				"operationId": "TransactionController_findAllByAccount",
-				"parameters": [
-					{
-						"name": "id",
-						"required": true,
-						"in": "path",
-						"schema": {
-							"type": "string"
-						}
-					}
-				],
-				"responses": {
-					"200": {
-						"description": ""
-					}
-				},
-				"security": [
-					{
-						"JWT-auth": []
-					}
-				],
-				"tags": ["Transaction"]
-			}
-		},
-		"/transaction/{id}": {
-			"get": {
-				"operationId": "TransactionController_findOne",
-				"parameters": [
-					{
-						"name": "id",
-						"required": true,
-						"in": "path",
-						"schema": {
-							"type": "string"
-						}
-					}
-				],
-				"responses": {
-					"200": {
-						"description": ""
-					}
-				},
-				"security": [
-					{
-						"JWT-auth": []
-					}
-				],
-				"tags": ["Transaction"]
-			}
-		},
 		"/auth/login": {
 			"post": {
+				"description": "Autentica um usuário com email e senha, retornando tokens JWT em cookies",
 				"operationId": "AuthController_login",
 				"parameters": [],
 				"requestBody": {
 					"required": true,
+					"description": "Credenciais do usuário",
 					"content": {
 						"application/json": {
 							"schema": {
@@ -110,19 +18,28 @@
 					}
 				},
 				"responses": {
-					"201": {
-						"description": ""
+					"200": {
+						"description": "Login realizado com sucesso"
+					},
+					"400": {
+						"description": "Email ou senha inválidos"
+					},
+					"401": {
+						"description": "Usuário não autorizado"
 					}
 				},
+				"summary": "Faz login do usuário",
 				"tags": ["auth"]
 			}
 		},
 		"/auth/register": {
 			"post": {
+				"description": "Cria uma nova conta de usuário com email, nome e senha",
 				"operationId": "AuthController_register",
 				"parameters": [],
 				"requestBody": {
 					"required": true,
+					"description": "Dados do novo usuário",
 					"content": {
 						"application/json": {
 							"schema": {
@@ -133,14 +50,29 @@
 				},
 				"responses": {
 					"201": {
-						"description": ""
+						"description": "Usuário registrado com sucesso",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/RegisterResponseDto"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Email já existe ou dados inválidos"
+					},
+					"409": {
+						"description": "Conflito - usuário já existe"
 					}
 				},
+				"summary": "Registra um novo usuário",
 				"tags": ["auth"]
 			}
 		},
 		"/auth/refresh-token": {
 			"post": {
+				"description": "Gera um novo access token usando um refresh token do cookie",
 				"operationId": "AuthController_refreshToken",
 				"parameters": [],
 				"requestBody": {
@@ -154,37 +86,59 @@
 					}
 				},
 				"responses": {
-					"201": {
-						"description": ""
+					"200": {
+						"description": "Token renovado com sucesso"
+					},
+					"401": {
+						"description": "Refresh token inválido ou expirado"
 					}
 				},
+				"summary": "Renova o token de acesso",
 				"tags": ["auth"]
 			}
 		},
 		"/users": {
 			"get": {
+				"description": "Retorna uma lista paginada de usuários cadastrados no sistema",
 				"operationId": "UserController_findAll",
 				"parameters": [
 					{
-						"name": "limit",
+						"name": "page",
 						"required": false,
-						"in": "path",
+						"in": "query",
+						"description": "Número da página (começa em 1)",
 						"schema": {
+							"minimum": 1,
+							"example": 1,
 							"type": "number"
 						}
 					},
 					{
-						"name": "page",
+						"name": "limit",
 						"required": false,
-						"in": "path",
+						"in": "query",
+						"description": "Quantidade de usuários por página",
 						"schema": {
+							"minimum": 1,
+							"maximum": 100,
+							"example": 10,
 							"type": "number"
 						}
 					}
 				],
 				"responses": {
 					"200": {
-						"description": ""
+						"description": "Lista de usuários retornada com sucesso",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/UserResponseDto"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Token JWT ausente ou inválido"
 					}
 				},
 				"security": [
@@ -192,16 +146,31 @@
 						"JWT-auth": []
 					}
 				],
+				"summary": "Lista todos os usuários",
 				"tags": ["users"]
 			}
 		},
 		"/users/me": {
 			"get": {
+				"description": "Retorna os dados do próprio usuário autenticado via token JWT",
 				"operationId": "UserController_findMe",
 				"parameters": [],
 				"responses": {
 					"200": {
-						"description": ""
+						"description": "Dados do usuário retornados com sucesso",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/UserResponseDto"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Token JWT ausente ou inválido"
+					},
+					"404": {
+						"description": "Usuário não encontrado"
 					}
 				},
 				"security": [
@@ -209,25 +178,42 @@
 						"JWT-auth": []
 					}
 				],
+				"summary": "Obtém dados do usuário autenticado",
 				"tags": ["users"]
 			}
 		},
 		"/users/{id}": {
 			"get": {
+				"description": "Retorna os dados de um usuário pelo seu UUID",
 				"operationId": "UserController_findOne",
 				"parameters": [
 					{
 						"name": "id",
 						"required": true,
 						"in": "path",
+						"description": "UUID do usuário a ser recuperado",
 						"schema": {
+							"example": "550e8400-e29b-41d4-a716-446655440000",
 							"type": "string"
 						}
 					}
 				],
 				"responses": {
 					"200": {
-						"description": ""
+						"description": "Usuário encontrado e retornado com sucesso",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/UserResponseDto"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Token JWT ausente ou inválido"
+					},
+					"404": {
+						"description": "Usuário não encontrado com esse UUID"
 					}
 				},
 				"security": [
@@ -235,15 +221,18 @@
 						"JWT-auth": []
 					}
 				],
+				"summary": "Obtém um usuário específico",
 				"tags": ["users"]
 			}
 		},
 		"/account": {
 			"post": {
+				"description": "Registra uma nova conta bancária para o usuário autenticado. Cada usuário pode ter apenas UMA conta, que é criada automaticamente durante o registro.",
 				"operationId": "AccountController_create",
 				"parameters": [],
 				"requestBody": {
 					"required": true,
+					"description": "Dados da conta a ser criada",
 					"content": {
 						"application/json": {
 							"schema": {
@@ -254,7 +243,23 @@
 				},
 				"responses": {
 					"201": {
-						"description": ""
+						"description": "Conta criada com sucesso",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/AccountResponseDto"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Dados inválidos"
+					},
+					"401": {
+						"description": "Token JWT ausente ou inválido"
+					},
+					"409": {
+						"description": "Usuário já possui uma conta"
 					}
 				},
 				"security": [
@@ -262,14 +267,29 @@
 						"JWT-auth": []
 					}
 				],
+				"summary": "Cria uma nova conta bancária",
 				"tags": ["account"]
 			},
 			"get": {
+				"description": "Retorna uma lista de todas as contas bancárias do sistema",
 				"operationId": "AccountController_findAll",
 				"parameters": [],
 				"responses": {
 					"200": {
-						"description": ""
+						"description": "Lista de contas retornada com sucesso",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "array",
+									"items": {
+										"$ref": "#/components/schemas/AccountResponseDto"
+									}
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Token JWT ausente ou inválido"
 					}
 				},
 				"security": [
@@ -277,16 +297,34 @@
 						"JWT-auth": []
 					}
 				],
+				"summary": "Lista todas as contas",
 				"tags": ["account"]
 			}
 		},
 		"/account/me": {
 			"get": {
+				"description": "Retorna todas as contas bancárias do usuário autenticado via token JWT",
 				"operationId": "AccountController_findAllByUser",
 				"parameters": [],
 				"responses": {
 					"200": {
-						"description": ""
+						"description": "Contas do usuário retornadas com sucesso",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "array",
+									"items": {
+										"$ref": "#/components/schemas/AccountResponseDto"
+									}
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Token JWT ausente ou inválido"
+					},
+					"404": {
+						"description": "Nenhuma conta encontrada para o usuário"
 					}
 				},
 				"security": [
@@ -294,25 +332,74 @@
 						"JWT-auth": []
 					}
 				],
+				"summary": "Lista contas do usuário autenticado",
+				"tags": ["account"]
+			}
+		},
+		"/account/me/single": {
+			"get": {
+				"description": "Retorna a única conta bancária do usuário autenticado. Cada usuário tem apenas uma conta.",
+				"operationId": "AccountController_findMe",
+				"parameters": [],
+				"responses": {
+					"200": {
+						"description": "Conta do usuário retornada com sucesso",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/AccountResponseDto"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Token JWT ausente ou inválido"
+					},
+					"404": {
+						"description": "Conta não encontrada para o usuário"
+					}
+				},
+				"security": [
+					{
+						"JWT-auth": []
+					}
+				],
+				"summary": "Retorna a conta única do usuário",
 				"tags": ["account"]
 			}
 		},
 		"/account/{id}": {
 			"get": {
+				"description": "Retorna os dados de uma conta bancária pelo seu UUID",
 				"operationId": "AccountController_findOne",
 				"parameters": [
 					{
 						"name": "id",
 						"required": true,
 						"in": "path",
+						"description": "UUID da conta a ser recuperada",
 						"schema": {
+							"example": "550e8400-e29b-41d4-a716-446655440000",
 							"type": "string"
 						}
 					}
 				],
 				"responses": {
 					"200": {
-						"description": ""
+						"description": "Conta encontrada e retornada com sucesso",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/AccountResponseDto"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Token JWT ausente ou inválido"
+					},
+					"404": {
+						"description": "Conta não encontrada com esse UUID"
 					}
 				},
 				"security": [
@@ -320,22 +407,27 @@
 						"JWT-auth": []
 					}
 				],
+				"summary": "Obtém uma conta específica",
 				"tags": ["account"]
 			},
 			"patch": {
+				"description": "Atualiza os dados de uma conta bancária existente",
 				"operationId": "AccountController_update",
 				"parameters": [
 					{
 						"name": "id",
 						"required": true,
 						"in": "path",
+						"description": "UUID da conta a ser atualizada",
 						"schema": {
+							"example": "550e8400-e29b-41d4-a716-446655440000",
 							"type": "string"
 						}
 					}
 				],
 				"requestBody": {
 					"required": true,
+					"description": "Dados da conta a serem atualizados",
 					"content": {
 						"application/json": {
 							"schema": {
@@ -346,7 +438,23 @@
 				},
 				"responses": {
 					"200": {
-						"description": ""
+						"description": "Conta atualizada com sucesso",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/AccountResponseDto"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Dados inválidos"
+					},
+					"401": {
+						"description": "Token JWT ausente ou inválido"
+					},
+					"404": {
+						"description": "Conta não encontrada"
 					}
 				},
 				"security": [
@@ -354,23 +462,33 @@
 						"JWT-auth": []
 					}
 				],
+				"summary": "Atualiza uma conta bancária",
 				"tags": ["account"]
 			},
 			"delete": {
+				"description": "Remove uma conta bancária do sistema",
 				"operationId": "AccountController_remove",
 				"parameters": [
 					{
 						"name": "id",
 						"required": true,
 						"in": "path",
+						"description": "UUID da conta a ser deletada",
 						"schema": {
+							"example": "550e8400-e29b-41d4-a716-446655440000",
 							"type": "string"
 						}
 					}
 				],
 				"responses": {
-					"200": {
-						"description": ""
+					"204": {
+						"description": "Conta deletada com sucesso"
+					},
+					"401": {
+						"description": "Token JWT ausente ou inválido"
+					},
+					"404": {
+						"description": "Conta não encontrada"
 					}
 				},
 				"security": [
@@ -378,50 +496,297 @@
 						"JWT-auth": []
 					}
 				],
+				"summary": "Deleta uma conta bancária",
 				"tags": ["account"]
+			}
+		},
+		"/transaction": {
+			"post": {
+				"description": "Cria uma nova transação entre duas contas. A transação é inicialmente criada com status PENDING e é enfileirada no RabbitMQ para processamento assíncrono",
+				"operationId": "TransactionController_create",
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"description": "Dados da transação a ser criada",
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/CreateTransactionDto"
+							}
+						}
+					}
+				},
+				"responses": {
+					"201": {
+						"description": "Transação criada e enfileirada com sucesso",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/CreateTransactionResponseDto"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Dados inválidos ou validação falhou (ex: contas iguais, saldo insuficiente)"
+					},
+					"401": {
+						"description": "Token JWT ausente ou inválido"
+					},
+					"500": {
+						"description": "Erro ao enfileirar a transação no RabbitMQ"
+					}
+				},
+				"security": [
+					{
+						"JWT-auth": []
+					}
+				],
+				"summary": "Cria uma nova transação bancária",
+				"tags": ["Transaction"]
+			},
+			"get": {
+				"description": "Retorna uma lista de todas as transações bancárias registradas no sistema",
+				"operationId": "TransactionController_findAll",
+				"parameters": [],
+				"responses": {
+					"200": {
+						"description": "Lista de transações retornada com sucesso",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "array",
+									"items": {
+										"$ref": "#/components/schemas/TransactionResponseDto"
+									}
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Token JWT ausente ou inválido"
+					}
+				},
+				"security": [
+					{
+						"JWT-auth": []
+					}
+				],
+				"summary": "Lista todas as transações",
+				"tags": ["Transaction"]
+			}
+		},
+		"/transaction/{id}/list-by-account": {
+			"get": {
+				"description": "Retorna todas as transações (enviadas e recebidas) de uma conta bancária",
+				"operationId": "TransactionController_findAllByAccount",
+				"parameters": [
+					{
+						"name": "id",
+						"required": true,
+						"in": "path",
+						"description": "UUID da conta para filtrar transações",
+						"schema": {
+							"example": "550e8400-e29b-41d4-a716-446655440000",
+							"type": "string"
+						}
+					},
+					{
+						"name": "limit",
+						"required": false,
+						"in": "query",
+						"schema": {
+							"default": 100
+						},
+						"description": "Número máximo de transações a serem retornadas"
+					},
+					{
+						"name": "page",
+						"required": false,
+						"in": "query",
+						"schema": {
+							"default": 1
+						},
+						"description": "Número da página a ser retornada"
+					},
+					{
+						"name": "type",
+						"required": false,
+						"in": "query",
+						"schema": {
+							"enum": ["sent", "received"]
+						},
+						"description": "Filtrar por tipo de transação: 'sent' (enviadas) ou 'received' (recebidas)"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Transações da conta retornadas com sucesso",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "array",
+									"items": {
+										"$ref": "#/components/schemas/TransactionResponseDto"
+									}
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Token JWT ausente ou inválido"
+					},
+					"404": {
+						"description": "Conta não encontrada"
+					}
+				},
+				"security": [
+					{
+						"JWT-auth": []
+					}
+				],
+				"summary": "Lista transações de uma conta específica",
+				"tags": ["Transaction"]
+			}
+		},
+		"/transaction/{id}": {
+			"get": {
+				"description": "Retorna os dados detalhados de uma transação pelo seu UUID",
+				"operationId": "TransactionController_findOne",
+				"parameters": [
+					{
+						"name": "id",
+						"required": true,
+						"in": "path",
+						"description": "UUID da transação a ser recuperada",
+						"schema": {
+							"example": "550e8400-e29b-41d4-a716-446655440000",
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Transação encontrada e retornada com sucesso",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/TransactionResponseDto"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Token JWT ausente ou inválido"
+					},
+					"404": {
+						"description": "Transação não encontrada com esse UUID"
+					}
+				},
+				"security": [
+					{
+						"JWT-auth": []
+					}
+				],
+				"summary": "Obtém uma transação específica",
+				"tags": ["Transaction"]
+			}
+		},
+		"/transaction/{transactionId}/sse": {
+			"get": {
+				"description": "Fornece um fluxo Server-Sent Events (SSE) que envia atualizações em tempo real sobre o status de uma transação específica",
+				"operationId": "TransactionController_sse",
+				"parameters": [
+					{
+						"name": "transactionId",
+						"required": true,
+						"in": "path",
+						"description": "UUID da transação para receber atualizações de status",
+						"schema": {
+							"example": "550e8400-e29b-41d4-a716-446655440000",
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Fluxo SSE para atualizações de status da transação iniciado",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/TransactionStatusDto"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Token JWT ausente ou inválido"
+					},
+					"404": {
+						"description": "Transação não encontrada com esse UUID"
+					}
+				},
+				"security": [
+					{
+						"JWT-auth": []
+					}
+				],
+				"summary": "Fluxo SSE para atualizações de status da transação",
+				"tags": ["Transaction"]
 			}
 		}
 	},
 	"info": {
-		"title": "Bank Api",
-		"description": "API para gerenciamento bancário",
-		"version": "1.0",
-		"contact": {}
+		"title": "Bank API",
+		"description": "API RESTful completa para gerenciamento bancário com suporte a autenticação JWT, operações de contas, transações e gerenciamento de usuários.",
+		"version": "1.0.0",
+		"contact": {
+			"name": "API Support",
+			"url": "https://github.com",
+			"email": "support@bank-api.com"
+		},
+		"license": {
+			"name": "MIT",
+			"url": "https://opensource.org/licenses/MIT"
+		}
 	},
-	"tags": [],
-	"servers": [],
+	"tags": [
+		{
+			"name": "auth",
+			"description": "Autenticação e autorização de usuários"
+		},
+		{
+			"name": "users",
+			"description": "Gerenciamento de usuários"
+		},
+		{
+			"name": "account",
+			"description": "Gerenciamento de contas bancárias"
+		},
+		{
+			"name": "Transaction",
+			"description": "Gerenciamento de transações bancárias"
+		}
+	],
+	"servers": [
+		{
+			"url": "http://localhost:3000",
+			"description": "Desenvolvimento Local"
+		},
+		{
+			"url": "https://api.bank-project.com",
+			"description": "Produção"
+		}
+	],
 	"components": {
 		"securitySchemes": {
 			"JWT-auth": {
 				"scheme": "bearer",
 				"bearerFormat": "JWT",
-				"type": "http",
-				"description": "Enter your token here",
-				"in": "header"
+				"type": "http"
 			}
 		},
 		"schemas": {
-			"CreateTransactionDto": {
-				"type": "object",
-				"properties": {
-					"amount": {
-						"type": "number",
-						"example": 10000,
-						"description": "Amount em centavos"
-					},
-					"senderId": {
-						"type": "string",
-						"example": "0a422f47-0c11-4961-951e-01250933e20c",
-						"description": "ID do account remetente"
-					},
-					"receiverId": {
-						"type": "string",
-						"example": "cdf7b6eb-adeb-4df1-a64e-3faeae120628",
-						"description": "ID do account destinatário"
-					}
-				},
-				"required": ["amount", "senderId", "receiverId"]
-			},
 			"LoginDto": {
 				"type": "object",
 				"properties": {
@@ -454,6 +819,17 @@
 				},
 				"required": ["name", "email", "password"]
 			},
+			"RegisterResponseDto": {
+				"type": "object",
+				"properties": {
+					"success": {
+						"type": "boolean",
+						"example": true,
+						"description": "Indica sucesso no registro"
+					}
+				},
+				"required": ["success"]
+			},
 			"RefreshTokenDto": {
 				"type": "object",
 				"properties": {
@@ -464,31 +840,247 @@
 				},
 				"required": ["refreshToken"]
 			},
+			"UserResponseDto": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string",
+						"example": "550e8400-e29b-41d4-a716-446655440000",
+						"description": "UUID único do usuário",
+						"format": "uuid"
+					},
+					"name": {
+						"type": "string",
+						"example": "John Doe",
+						"description": "Nome completo do usuário"
+					},
+					"email": {
+						"type": "string",
+						"example": "john@example.com",
+						"description": "Email do usuário",
+						"format": "email"
+					},
+					"createdAt": {
+						"type": "string",
+						"example": "2024-10-16T00:00:00Z",
+						"description": "Data de criação do usuário",
+						"format": "date-time"
+					},
+					"updatedAt": {
+						"type": "string",
+						"example": "2024-10-16T00:00:00Z",
+						"description": "Data da última atualização do usuário",
+						"format": "date-time"
+					}
+				},
+				"required": ["id", "name", "email", "createdAt", "updatedAt"]
+			},
 			"CreateAccountDto": {
 				"type": "object",
 				"properties": {
-					"userId": {
+					"balance": {
+						"type": "number",
+						"example": 100000,
+						"description": "Saldo inicial da conta em centavos",
+						"minimum": 0
+					}
+				},
+				"required": ["balance"]
+			},
+			"AccountResponseDto": {
+				"type": "object",
+				"properties": {
+					"id": {
 						"type": "string",
 						"example": "550e8400-e29b-41d4-a716-446655440000",
-						"description": "ID do usuário"
+						"description": "UUID único da conta",
+						"format": "uuid"
+					},
+					"userId": {
+						"type": "string",
+						"example": "550e8400-e29b-41d4-a716-446655440001",
+						"description": "UUID do usuário proprietário da conta",
+						"format": "uuid"
 					},
 					"accountNumber": {
 						"type": "string",
 						"example": "123456",
-						"description": "Número da conta"
+						"description": "Número da conta bancária"
 					},
 					"balance": {
 						"type": "number",
 						"example": 100000,
-						"description": "Saldo da conta em centavos"
+						"description": "Saldo da conta em centavos",
+						"minimum": 0
+					},
+					"createdAt": {
+						"type": "string",
+						"example": "2024-10-16T00:00:00Z",
+						"description": "Data de criação da conta",
+						"format": "date-time"
+					},
+					"updatedAt": {
+						"type": "string",
+						"example": "2024-10-16T00:00:00Z",
+						"description": "Data da última atualização da conta",
+						"format": "date-time"
 					}
 				},
-				"required": ["userId", "accountNumber", "balance"]
+				"required": [
+					"id",
+					"userId",
+					"accountNumber",
+					"balance",
+					"createdAt",
+					"updatedAt"
+				]
 			},
 			"UpdateAccountDto": {
 				"type": "object",
 				"properties": {}
+			},
+			"CreateTransactionDto": {
+				"type": "object",
+				"properties": {
+					"amount": {
+						"type": "number",
+						"example": 10000,
+						"description": "Valor da transação em centavos",
+						"minimum": 1
+					},
+					"senderId": {
+						"type": "string",
+						"example": "0a422f47-0c11-4961-951e-01250933e20c",
+						"description": "UUID da conta remetente (de onde o dinheiro será debitado)",
+						"format": "uuid"
+					},
+					"receiverId": {
+						"type": "string",
+						"example": "cdf7b6eb-adeb-4df1-a64e-3faeae120628",
+						"description": "UUID da conta destinatária (para onde o dinheiro será creditado)",
+						"format": "uuid"
+					}
+				},
+				"required": ["amount", "senderId", "receiverId"]
+			},
+			"CreateTransactionResponseDto": {
+				"type": "object",
+				"properties": {
+					"transactionId": {
+						"type": "string",
+						"example": "550e8400-e29b-41d4-a716-446655440000",
+						"description": "UUID único da transação criada",
+						"format": "uuid"
+					},
+					"status": {
+						"type": "string",
+						"example": "PENDING",
+						"enum": [
+							"PENDING",
+							"PROCESSING",
+							"COMPLETED",
+							"FAILED",
+							"CANCELLED"
+						],
+						"description": "Status inicial da transação (sempre PENDING na criação)"
+					}
+				},
+				"required": ["transactionId", "status"]
+			},
+			"TransactionResponseDto": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string",
+						"example": "550e8400-e29b-41d4-a716-446655440000",
+						"description": "UUID único da transação",
+						"format": "uuid"
+					},
+					"amount": {
+						"type": "number",
+						"example": 10000,
+						"description": "Valor da transação em centavos",
+						"minimum": 1
+					},
+					"senderId": {
+						"type": "string",
+						"example": "550e8400-e29b-41d4-a716-446655440001",
+						"description": "UUID da conta remetente",
+						"format": "uuid"
+					},
+					"receiverId": {
+						"type": "string",
+						"example": "550e8400-e29b-41d4-a716-446655440002",
+						"description": "UUID da conta destinatária",
+						"format": "uuid"
+					},
+					"status": {
+						"type": "string",
+						"example": "pending",
+						"enum": ["recused", "approved", "pending"],
+						"description": "Status da transação"
+					},
+					"createdAt": {
+						"type": "string",
+						"example": "2024-10-16T00:00:00Z",
+						"description": "Data de criação da transação",
+						"format": "date-time"
+					}
+				},
+				"required": [
+					"id",
+					"amount",
+					"senderId",
+					"receiverId",
+					"status",
+					"createdAt"
+				]
+			},
+			"TransactionStatusDto": {
+				"type": "object",
+				"properties": {
+					"status": {
+						"type": "string",
+						"example": "approved",
+						"description": "Status atual da transação"
+					}
+				},
+				"required": ["status"]
+			},
+			"UpdateTransactionDto": {
+				"type": "object",
+				"properties": {
+					"amount": {
+						"type": "number",
+						"example": 10000,
+						"description": "Valor da transação em centavos",
+						"minimum": 1
+					},
+					"senderId": {
+						"type": "string",
+						"example": "0a422f47-0c11-4961-951e-01250933e20c",
+						"description": "UUID da conta remetente (de onde o dinheiro será debitado)",
+						"format": "uuid"
+					},
+					"receiverId": {
+						"type": "string",
+						"example": "cdf7b6eb-adeb-4df1-a64e-3faeae120628",
+						"description": "UUID da conta destinatária (para onde o dinheiro será creditado)",
+						"format": "uuid"
+					},
+					"transactionId": {
+						"type": "string",
+						"example": "550e8400-e29b-41d4-a716-446655440000",
+						"description": "UUID único da transação a ser atualizada",
+						"format": "uuid"
+					}
+				},
+				"required": ["amount", "senderId", "receiverId", "transactionId"]
 			}
 		}
+	},
+	"externalDocs": {
+		"description": "Postman Collection",
+		"url": "https://www.postman.com/collections/your-collection"
 	}
 }

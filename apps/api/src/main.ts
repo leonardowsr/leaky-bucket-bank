@@ -10,6 +10,9 @@ import { configuration } from "./config/configuration";
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
 
+	// Habilitar CORS
+	app.enableCors(configuration.cors);
+
 	app.connectMicroservice<MicroserviceOptions>({
 		transport: Transport.RMQ,
 		options: {
@@ -18,6 +21,7 @@ async function bootstrap() {
 			queueOptions: {
 				durable: true,
 			},
+			prefetchCount: 1,
 			noAck: false,
 		},
 	});
@@ -33,19 +37,31 @@ async function bootstrap() {
 	);
 
 	const config = new DocumentBuilder()
-		.setTitle("Bank Api")
-		.setVersion("1.0")
+		.setTitle("Bank API")
+		.setVersion("1.0.0")
+		.setDescription(
+			"API RESTful completa para gerenciamento bancário com suporte a autenticação JWT, operações de contas, transações e gerenciamento de usuários.",
+		)
+		.setContact("API Support", "https://github.com", "support@bank-api.com")
+		.setLicense("MIT", "https://opensource.org/licenses/MIT")
+		.setExternalDoc(
+			"Postman Collection",
+			"https://www.postman.com/collections/your-collection",
+		)
+		.addTag("auth", "Autenticação e autorização de usuários")
+		.addTag("users", "Gerenciamento de usuários")
+		.addTag("account", "Gerenciamento de contas bancárias")
+		.addTag("Transaction", "Gerenciamento de transações bancárias")
+		.addServer("http://localhost:3000", "Desenvolvimento Local")
+		.addServer("https://api.bank-project.com", "Produção")
 		.addBearerAuth(
 			{
 				type: "http",
 				scheme: "bearer",
 				bearerFormat: "JWT",
-				description: "Enter your token here",
-				in: "header",
 			},
 			"JWT-auth",
 		)
-		.setDescription("API para gerenciamento bancário")
 		.build();
 
 	const document = SwaggerModule.createDocument(app, config);
@@ -64,6 +80,6 @@ async function bootstrap() {
 	await app.listen(configuration.port);
 	console.info("🚀 Servidor rodando em: http://localhost:3000");
 	console.info("📚 Swagger UI: http://localhost:3000/api");
-	console.info("📋 Swagger JSON: http://localhost:3000/swagger/json");
+	console.info("🛠️  RabbitMQ Management: http://localhost:15672/");
 }
 bootstrap();
