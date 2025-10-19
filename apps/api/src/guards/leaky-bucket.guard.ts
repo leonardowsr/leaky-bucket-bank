@@ -1,5 +1,6 @@
 import { PrismaService } from "@api/modules/_prisma/prisma.service";
 import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
+import { Request } from "express";
 
 @Injectable()
 export class LeakyBucketGuard implements CanActivate {
@@ -7,14 +8,16 @@ export class LeakyBucketGuard implements CanActivate {
 	async canActivate(context: ExecutionContext) {
 		const request = context.switchToHttp().getRequest<Request>();
 
-		const userId = request.user.sub as string;
+		const userId = request?.user?.sub;
 
 		const user = await this.prisma.user.findUnique({
 			where: { id: userId },
 		});
+
 		if (!user) {
 			return false;
 		}
+
 		const { tokenCount, usedTokenAt } = user;
 
 		if (!checkIfHasTokens(tokenCount, usedTokenAt)) {
