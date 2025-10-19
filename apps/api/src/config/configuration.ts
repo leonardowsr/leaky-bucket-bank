@@ -29,11 +29,10 @@ export const configuration = {
 	cors: {
 		origin:
 			process.env.CORS_ORIGIN && process.env.CORS_ORIGIN !== "*"
-				? process.env.CORS_ORIGIN.split(",").map((o) => o.trim())
+				? process.env.CORS_ORIGIN.split(",")
+						.map((o) => o.trim())
+						.filter(Boolean)
 				: ["http://localhost:3001", "http://localhost:3000"],
-		credentials: true,
-		allowedHeaders: ["Content-Type", "Authorization"],
-		methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
 	},
 };
 

@@ -10,8 +10,19 @@ import { configuration } from "./config/configuration";
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
 
-	// Habilitar CORS
-	app.enableCors(configuration.cors);
+	const origins = configuration.cors.origin;
+
+	app.enableCors({
+		origin: (origin, callback) => {
+			if (!origin || origins.includes(origin)) {
+				callback(null, true);
+			} else {
+				console.warn("❌ Blocked by CORS:", origin);
+				callback(new Error("Not allowed by CORS"));
+			}
+		},
+		credentials: true,
+	});
 
 	app.connectMicroservice<MicroserviceOptions>({
 		transport: Transport.RMQ,
