@@ -1,4 +1,5 @@
 import { configuration } from "@api/config/configuration";
+import { LeakyBucketGuard } from "@api/guards/leaky-bucket.guard";
 import {
 	Body,
 	Controller,
@@ -11,6 +12,7 @@ import {
 	Post,
 	Query,
 	Sse,
+	UseGuards,
 } from "@nestjs/common";
 import { ClientProxy } from "@nestjs/microservices";
 import {
@@ -35,6 +37,7 @@ import { TransactionService } from "./transaction.service";
 
 @ApiTags("Transaction")
 @ApiBearerAuth("JWT-auth")
+@UseGuards(LeakyBucketGuard)
 @Controller("transaction")
 export class TransactionController {
 	constructor(
@@ -74,7 +77,6 @@ export class TransactionController {
 	})
 	async create(@Body() createTransactionDto: CreateTransactionDto) {
 		await this.transactionService.validateTransaction(createTransactionDto);
-
 		const transaction =
 			await this.transactionService.createPendingTransaction(
 				createTransactionDto,

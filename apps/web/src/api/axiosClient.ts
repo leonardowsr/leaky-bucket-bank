@@ -28,6 +28,12 @@ axiosInstance.interceptors.request.use(async (config) => {
 axiosInstance.interceptors.response.use(
 	(response) => response,
 	async (error) => {
+		const isLoginPage = window.location.pathname === "/login";
+
+		if (isLoginPage) {
+			return Promise.reject(error);
+		}
+
 		const originalRequest = error.config;
 		const { refreshToken } = await getTokens();
 

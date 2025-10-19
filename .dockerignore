@@ -1,0 +1,35 @@
+# Ignora tudo desnecessário pro build
+node_modules
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+pnpm-lock.yaml
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+.vscode
+.idea
+.DS_Store
+
+# Ignora caches e outputs de build
+dist
+turbo
+.turbo
+.bun
+bun.lockb
+bun.lockb.old
+
+# Ignora pastas do monorepo que não são necessárias pra build da API
+apps/web
+packages/
+test/
+coverage/
+tmp/
+logs/
+__tests__/
+__mocks__/
+
+# Ignora arquivos específicos do sistema operacional
+Thumbs.db

@@ -4,7 +4,10 @@ import { useForm } from "@tanstack/react-form";
 import { useQueryClient } from "@tanstack/react-query";
 import { Check } from "lucide-react";
 import { useEffect, useState } from "react";
-import { getFindMeQueryKey, useFindMe } from "@/api/client/account/account";
+import {
+	getFindMeAccountQueryKey,
+	useFindMeAccount,
+} from "@/api/client/account/account";
 import {
 	getFindByKeyQueryKey,
 	useFindByKey,
@@ -48,8 +51,8 @@ export function NewTransactionDialogContent({
 	);
 	const [searchKey, setSearchKey] = useState<string>("");
 
-	const QueryClient = useQueryClient();
-	const { data: meAccount } = useFindMe();
+	const queryClient = useQueryClient();
+	const { data: meAccount } = useFindMeAccount();
 
 	const { data: accountKeyData, isFetching: isFetchingKey } = useFindByKey(
 		{ key: searchKey },
@@ -65,7 +68,7 @@ export function NewTransactionDialogContent({
 	const senderId = meAccount?.id;
 	const { transaction, isLoading, isFinished } =
 		useTransactionSubscription(transactionId);
-	const { mutate: createTransaction, isPending } = useCreate();
+	const { mutateAsync: createTransaction, isPending } = useCreate();
 
 	const form = useForm({
 		defaultValues: { receiverKey: "", amount: "" },
@@ -88,7 +91,7 @@ export function NewTransactionDialogContent({
 				const amountInCentavos = Math.round(
 					(value.amount as unknown as number) * 100,
 				);
-				createTransaction(
+				await createTransaction(
 					{
 						data: {
 							amount: amountInCentavos,
@@ -97,7 +100,9 @@ export function NewTransactionDialogContent({
 						},
 					},
 					{
-						onSuccess: (data) => setTransactionId(data.transactionId),
+						onSuccess: (data) => {
+							setTransactionId(data.transactionId);
+						},
 						onError: (error) =>
 							getErrorMessage(error, "Erro ao criar transação"),
 					},
@@ -121,11 +126,11 @@ export function NewTransactionDialogContent({
 	// Fecha automaticamente após finalizar (sem estados extras)
 	useEffect(() => {
 		if (!transactionId || !isFinished) return;
-		QueryClient.invalidateQueries({ queryKey: getFindMeQueryKey() });
-		QueryClient.invalidateQueries({
+		queryClient.invalidateQueries({ queryKey: getFindMeAccountQueryKey() });
+		queryClient.invalidateQueries({
 			queryKey: getFindAllByAccountQueryKey(meAccount?.id),
 		});
-		QueryClient.removeQueries({
+		queryClient.removeQueries({
 			queryKey: ["transaction-sse", transactionId],
 		});
 		const timer = setTimeout(() => {
@@ -133,7 +138,7 @@ export function NewTransactionDialogContent({
 		}, 1500);
 
 		return () => clearTimeout(timer);
-	}, [isFinished, transactionId, QueryClient, meAccount?.id, onClose]);
+	}, [isFinished, transactionId, queryClient, meAccount?.id, onClose]);
 
 	const showLoading = (isLoading || isFinished) && !!transactionId;
 

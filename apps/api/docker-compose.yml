@@ -1,21 +1,26 @@
-name: my-better-t-app
+name: bank_project
 
 services:
-  rabbitmq:
-    image: rabbitmq:3-management
-    container_name: rabbitmq_bank
-    environment:
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
+  api:
+    build:
+      context: ../../
+      dockerfile: ./apps/api/Dockerfile.prod
+    container_name: api_bank
     ports:
-      - "5672:5672" # AMQP protocol port
-      - "15672:15672" # RabbitMQ Management UI port
-    volumes:
-      - rabbitmq_data:/var/lib/rabbitmq # Persist RabbitMQ data
-      - rabbitmq_log:/var/log/rabbitmq # Persist RabbitMQ logs
+      - "3000:3000"
+    env_file:
+      - ./.env
+    environment:
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+    depends_on:
+      - postgres
+      - rabbitmq
+    command: >
+      sh -c "until pg_isready -h postgres -p 5432 -U postgres; do echo 'waiting for db...'; sleep 2; done; npm run db:migrate && npm run start:prod"
+
   postgres:
     image: postgres:18
-    container_name: bank
+    container_name: postgres_bank
     environment:
       POSTGRES_DB: bank
       POSTGRES_USER: postgres
@@ -30,6 +35,19 @@ services:
       timeout: 5s
       retries: 5
     restart: unless-stopped
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq_bank
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+      - rabbitmq_log:/var/log/rabbitmq
 
 volumes:
   bank_postgres_data:

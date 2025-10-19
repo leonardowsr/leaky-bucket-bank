@@ -10,6 +10,7 @@ import { NewTransactionDialogContent } from "./new-transaction-dialog-content";
 export function NewTransactionDialog() {
 	const [isOpen, setIsOpen] = useState(false);
 	const { isOpen: isSidebarOpen } = useSidebar();
+
 	const dialogKeyRef = useRef(0);
 
 	const handleOpenChange = (open: boolean) => {

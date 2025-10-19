@@ -1,5 +1,5 @@
 {
-	"name": "my-better-t-app",
+	"name": "bank",
 	"private": true,
 	"type": "module",
 	"workspaces": {
@@ -37,9 +37,6 @@
 		"db:down": "turbo -F api db:down"
 	},
 	"dependencies": {
-		"@nestjs/jwt": "^11.0.1",
-		"@nestjs/mapped-types": "*",
-		"@scalar/nestjs-api-reference": "^1.0.5",
 		"dotenv": "^17.2.2",
 		"zod": "^4.1.11"
 	},

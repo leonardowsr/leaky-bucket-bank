@@ -55,28 +55,6 @@ export class AccountService {
 		});
 	}
 
-	findAllByUser(userId: string) {
-		return this.prisma.account.findMany({
-			where: { userId, deletedAt: null },
-			select: {
-				accountNumber: true,
-				balance: true,
-				id: true,
-				userId: true,
-				accountKeys: {
-					where: {
-						deletedAt: null,
-					},
-					select: {
-						id: true,
-						key: true,
-						createdAt: true,
-					},
-				},
-			},
-		});
-	}
-
 	async findMe(userId: string) {
 		const account = await this.prisma.account.findUnique({
 			where: { userId },
@@ -105,8 +83,8 @@ export class AccountService {
 		return account;
 	}
 
-	findOne(id: string) {
-		this.checkAccountIsActive(id);
+	async findOne(id: string) {
+		await this.checkAccountIsActive(id);
 		return this.prisma.account.findUnique({
 			where: { id },
 			select: {

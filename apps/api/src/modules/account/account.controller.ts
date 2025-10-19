@@ -86,33 +86,6 @@ export class AccountController {
 
 	@Get("me")
 	@ApiOperation({
-		summary: "Lista contas do usuário autenticado",
-		description:
-			"Retorna todas as contas bancárias do usuário autenticado via token JWT",
-	})
-	@ApiResponse({
-		status: 200,
-		description: "Contas do usuário retornadas com sucesso",
-		type: [AccountResponseDto],
-	})
-	@ApiResponse({
-		status: 401,
-		description: "Token JWT ausente ou inválido",
-	})
-	@ApiResponse({
-		status: 404,
-		description: "Nenhuma conta encontrada para o usuário",
-	})
-	findAllByUser(@Req() request: Request) {
-		const userId = request["user"].sub as string;
-		if (!userId) {
-			throw new BadRequestException("User ID não fornecido");
-		}
-		return this.accountService.findAllByUser(userId);
-	}
-
-	@Get("me/single")
-	@ApiOperation({
 		summary: "Retorna a conta única do usuário",
 		description:
 			"Retorna a única conta bancária do usuário autenticado. Cada usuário tem apenas uma conta.",
@@ -130,7 +103,7 @@ export class AccountController {
 		status: 404,
 		description: "Conta não encontrada para o usuário",
 	})
-	findMe(@Req() request: Request) {
+	findMeAccount(@Req() request: Request) {
 		const userId = request["user"].sub as string;
 		if (!userId) {
 			throw new BadRequestException("User ID não fornecido");

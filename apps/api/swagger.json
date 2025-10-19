@@ -156,7 +156,7 @@
 		"/users/me": {
 			"get": {
 				"description": "Retorna os dados do próprio usuário autenticado via token JWT",
-				"operationId": "UserController_findMe",
+				"operationId": "UserController_findMeUser",
 				"parameters": [],
 				"responses": {
 					"200": {
@@ -306,43 +306,8 @@
 		},
 		"/account/me": {
 			"get": {
-				"description": "Retorna todas as contas bancárias do usuário autenticado via token JWT",
-				"operationId": "AccountController_findAllByUser",
-				"parameters": [],
-				"responses": {
-					"200": {
-						"description": "Contas do usuário retornadas com sucesso",
-						"content": {
-							"application/json": {
-								"schema": {
-									"type": "array",
-									"items": {
-										"$ref": "#/components/schemas/AccountResponseDto"
-									}
-								}
-							}
-						}
-					},
-					"401": {
-						"description": "Token JWT ausente ou inválido"
-					},
-					"404": {
-						"description": "Nenhuma conta encontrada para o usuário"
-					}
-				},
-				"security": [
-					{
-						"JWT-auth": []
-					}
-				],
-				"summary": "Lista contas do usuário autenticado",
-				"tags": ["account"]
-			}
-		},
-		"/account/me/single": {
-			"get": {
 				"description": "Retorna a única conta bancária do usuário autenticado. Cada usuário tem apenas uma conta.",
-				"operationId": "AccountController_findMe",
+				"operationId": "AccountController_findMeAccount",
 				"parameters": [],
 				"responses": {
 					"200": {

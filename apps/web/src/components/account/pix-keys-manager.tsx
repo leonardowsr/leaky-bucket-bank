@@ -4,7 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Key, Loader2, Plus, Trash2 } from "lucide-react";
 import { useId, useState } from "react";
 import { toast } from "sonner";
-import { useFindMe } from "@/api/client/account/account";
+import { useFindMeAccount } from "@/api/client/account/account";
 import {
 	useCreate,
 	useFindAll,
@@ -27,7 +27,7 @@ export function PixKeysManager() {
 	const queryClient = useQueryClient();
 	const inputId = useId();
 
-	const { data: account } = useFindMe();
+	const { data: account } = useFindMeAccount();
 
 	const { data: pixKeys, isLoading: isLoadingKeys } = useFindAll();
 
@@ -36,7 +36,6 @@ export function PixKeysManager() {
 			onSuccess: () => {
 				toast.success("Chave PIX cadastrada com sucesso!");
 				setNewKey("");
-				// Refetch das chaves
 				queryClient.invalidateQueries({ queryKey: ["/account-key"] });
 			},
 			onError: (error: unknown) => {
@@ -88,8 +87,6 @@ export function PixKeysManager() {
 
 	return (
 		<div className="px-4 lg:px-6">
-			<h2 className="mb-4 font-bold text-2xl">Gerenciar Chaves PIX</h2>
-
 			<div className="grid gap-4 md:grid-cols-2">
 				{/* Card para criar nova chave */}
 				<Card>

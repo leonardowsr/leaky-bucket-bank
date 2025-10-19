@@ -46,8 +46,12 @@ export class UserController {
 		status: 401,
 		description: "Token JWT ausente ou inválido",
 	})
-	findAll(@Query() query: UserQueryDto) {
-		return this.userService.findAll(query);
+	findAll(
+		@Req() req: Request & { user: { sub: string } },
+		@Query() query: UserQueryDto,
+	) {
+		const userId = req.user.sub;
+		return this.userService.findAll(query, userId);
 	}
 
 	@Get("me")
@@ -69,7 +73,7 @@ export class UserController {
 		status: 404,
 		description: "Usuário não encontrado",
 	})
-	findMe(@Req() req: Request & { user: { sub: string } }) {
+	findMeUser(@Req() req: Request & { user: { sub: string } }) {
 		const userId = req.user.sub;
 		return this.userService.findMe(userId);
 	}

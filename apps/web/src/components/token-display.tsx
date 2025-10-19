@@ -1,4 +1,4 @@
-import { useFindMe } from "@/api/client/users/users";
+import { useFindMeUser } from "@/api/client/users/users";
 import { Button } from "./ui/button";
 import {
 	Card,
@@ -10,7 +10,7 @@ import {
 import { Skeleton } from "./ui/skeleton";
 
 export const TokenDisplay = () => {
-	const { data: user, isLoading, isError, refetch } = useFindMe();
+	const { data: user, isLoading, isError, refetch } = useFindMeUser();
 
 	if (isLoading) {
 		<LoadingSkeleton />;

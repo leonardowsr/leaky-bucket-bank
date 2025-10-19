@@ -1,0 +1,52 @@
+# Base com Node
+FROM node:20-alpine AS base
+
+# Instala o Turbo CLI globalmente (via npm)
+FROM base AS turbo
+RUN npm install -g turbo
+
+# ---------- PRUNE (reduz contexto p/ build em Docker) ----------
+FROM turbo AS pruner
+WORKDIR /repo
+# Copiamos tudo porque o turbo prune precisa ver o grafo inteiro
+COPY . .
+# Mantém só o necessário para api
+RUN turbo prune --scope=api --docker
+
+# ---------- INSTALLER (instala deps no workspace podado) ----------
+FROM base AS installer
+WORKDIR /app
+
+# 1) Copia os package.json prunados
+COPY --from=pruner /repo/out/json/ .
+
+# 2) Instala dependências com npm
+RUN npm install
+
+# 3) Copia o código completo filtrado pelo prune
+COPY --from=pruner /repo/out/full/ .
+
+# 4) Gera Prisma Client (necessário para runtime)
+RUN cd apps/api && npm run db:generate
+
+# ---------- BUILD (gera dist da API NestJS) ----------
+# Assumindo que apps/api tem scripts: "build": "nest build"
+RUN cd apps/api && npm run build
+
+# ---------- RUNNER ----------
+FROM node:20-alpine AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+
+# Instala postgresql-client para pg_isready
+RUN apt-get update && apt-get install -y postgresql-client && rm -rf /var/lib/apt/lists/*
+
+# Copia tudo já instalado e buildado
+COPY --from=installer /app .
+
+# Porta da API
+EXPOSE 3000
+
+# Executa com Node (já que o build é para Node)
+WORKDIR /app/apps/api
+CMD ["node", "dist/src/main.js"]

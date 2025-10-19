@@ -3,8 +3,8 @@
 import { LayoutGrid, LogOut, User, Wallet } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "nextjs-toploader/app";
-import { useFindAllByUser } from "@/api/client/account/account";
-import { useFindMe } from "@/api/client/users/users";
+import { useFindMeAccount } from "@/api/client/account/account";
+import { useFindMeUser } from "@/api/client/users/users";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,8 +26,8 @@ import {
 export function UserNav() {
 	const { push } = useRouter();
 
-	const { data: userData } = useFindMe();
-	const { data: accounts } = useFindAllByUser();
+	const { data: userData } = useFindMeUser();
+	const { data: account } = useFindMeAccount();
 
 	const getInitials = (name?: string) => {
 		if (!name) return "U";
@@ -82,8 +82,7 @@ export function UserNav() {
 				</DropdownMenuLabel>
 				<DropdownMenuSeparator />
 
-				{/* Contas do usuário */}
-				{accounts && accounts.length > 0 && (
+				{account && (
 					<>
 						<div className="px-2 py-2">
 							<p className="mb-2 flex items-center font-semibold text-muted-foreground text-xs">
@@ -96,7 +95,7 @@ export function UserNav() {
 									Número da conta:
 								</p>
 								<p className="font-bold font-mono text-sm">
-									{accounts[0]?.accountNumber || "N/A"}
+									{account.accountNumber || "N/A"}
 								</p>
 							</div>
 							{/* Saldo da conta */}
@@ -104,7 +103,7 @@ export function UserNav() {
 								<div className="flex items-center justify-between">
 									<span className="text-muted-foreground text-xs">Saldo:</span>
 									<span className="font-medium text-sm">
-										{formatCurrency(accounts[0]?.balance || 0)}
+										{formatCurrency(account.balance || 0)}
 									</span>
 								</div>
 							</div>
@@ -123,7 +122,7 @@ export function UserNav() {
 					<DropdownMenuItem className="hover:cursor-pointer" asChild>
 						<Link href="/account" className="flex items-center">
 							<User className="mr-3 h-4 w-4 text-muted-foreground" />
-							Gerenciar Contas
+							Gerenciar Conta
 						</Link>
 					</DropdownMenuItem>
 				</DropdownMenuGroup>

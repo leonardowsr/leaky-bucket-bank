@@ -6,7 +6,7 @@ import { UserQueryDto } from "./dto/user-query.dto";
 export class UserService {
 	constructor(private prisma: PrismaService) {}
 
-	async findAll(query: UserQueryDto) {
+	async findAll(query: UserQueryDto, userId: string) {
 		const page = query.page ?? 1;
 		const limit = query.limit ?? 10;
 
@@ -15,6 +15,11 @@ export class UserService {
 			take: limit,
 			orderBy: {
 				createdAt: "desc",
+			},
+			where: {
+				id: {
+					not: userId,
+				},
 			},
 			select: {
 				id: true,

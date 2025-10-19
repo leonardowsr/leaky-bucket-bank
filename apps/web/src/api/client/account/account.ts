@@ -174,127 +174,66 @@ export function useFindAll<
 }
 
 /**
- * Retorna todas as contas bancárias do usuário autenticado via token JWT
- * @summary Lista contas do usuário autenticado
+ * Retorna a única conta bancária do usuário autenticado. Cada usuário tem apenas uma conta.
+ * @summary Retorna a conta única do usuário
  */
-export const findAllByUser = (signal?: AbortSignal) => {
-	return axiosClient<AccountResponseDto[]>({
+export const findMeAccount = (signal?: AbortSignal) => {
+	return axiosClient<AccountResponseDto>({
 		url: "/account/me",
 		method: "GET",
 		signal,
 	});
 };
 
-export const getFindAllByUserQueryKey = () => {
+export const getFindMeAccountQueryKey = () => {
 	return ["/account/me"] as const;
 };
 
-export const getFindAllByUserQueryOptions = <
-	TData = Awaited<ReturnType<typeof findAllByUser>>,
+export const getFindMeAccountQueryOptions = <
+	TData = Awaited<ReturnType<typeof findMeAccount>>,
 	TError = undefined | undefined,
 >(options?: {
 	query?: UseQueryOptions<
-		Awaited<ReturnType<typeof findAllByUser>>,
+		Awaited<ReturnType<typeof findMeAccount>>,
 		TError,
 		TData
 	>;
 }) => {
 	const { query: queryOptions } = options ?? {};
 
-	const queryKey = queryOptions?.queryKey ?? getFindAllByUserQueryKey();
+	const queryKey = queryOptions?.queryKey ?? getFindMeAccountQueryKey();
 
-	const queryFn: QueryFunction<Awaited<ReturnType<typeof findAllByUser>>> = ({
+	const queryFn: QueryFunction<Awaited<ReturnType<typeof findMeAccount>>> = ({
 		signal,
-	}) => findAllByUser(signal);
+	}) => findMeAccount(signal);
 
 	return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-		Awaited<ReturnType<typeof findAllByUser>>,
+		Awaited<ReturnType<typeof findMeAccount>>,
 		TError,
 		TData
 	> & { queryKey: QueryKey };
 };
 
-export type FindAllByUserQueryResult = NonNullable<
-	Awaited<ReturnType<typeof findAllByUser>>
+export type FindMeAccountQueryResult = NonNullable<
+	Awaited<ReturnType<typeof findMeAccount>>
 >;
-export type FindAllByUserQueryError = undefined | undefined;
+export type FindMeAccountQueryError = undefined | undefined;
 
 /**
- * @summary Lista contas do usuário autenticado
+ * @summary Retorna a conta única do usuário
  */
 
-export function useFindAllByUser<
-	TData = Awaited<ReturnType<typeof findAllByUser>>,
+export function useFindMeAccount<
+	TData = Awaited<ReturnType<typeof findMeAccount>>,
 	TError = undefined | undefined,
 >(options?: {
 	query?: UseQueryOptions<
-		Awaited<ReturnType<typeof findAllByUser>>,
+		Awaited<ReturnType<typeof findMeAccount>>,
 		TError,
 		TData
 	>;
 }): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-	const queryOptions = getFindAllByUserQueryOptions(options);
-
-	const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
-		queryKey: QueryKey;
-	};
-
-	query.queryKey = queryOptions.queryKey;
-
-	return query;
-}
-
-/**
- * Retorna a única conta bancária do usuário autenticado. Cada usuário tem apenas uma conta.
- * @summary Retorna a conta única do usuário
- */
-export const findMe = (signal?: AbortSignal) => {
-	return axiosClient<AccountResponseDto>({
-		url: "/account/me/single",
-		method: "GET",
-		signal,
-	});
-};
-
-export const getFindMeQueryKey = () => {
-	return ["/account/me/single"] as const;
-};
-
-export const getFindMeQueryOptions = <
-	TData = Awaited<ReturnType<typeof findMe>>,
-	TError = undefined | undefined,
->(options?: {
-	query?: UseQueryOptions<Awaited<ReturnType<typeof findMe>>, TError, TData>;
-}) => {
-	const { query: queryOptions } = options ?? {};
-
-	const queryKey = queryOptions?.queryKey ?? getFindMeQueryKey();
-
-	const queryFn: QueryFunction<Awaited<ReturnType<typeof findMe>>> = ({
-		signal,
-	}) => findMe(signal);
-
-	return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-		Awaited<ReturnType<typeof findMe>>,
-		TError,
-		TData
-	> & { queryKey: QueryKey };
-};
-
-export type FindMeQueryResult = NonNullable<Awaited<ReturnType<typeof findMe>>>;
-export type FindMeQueryError = undefined | undefined;
-
-/**
- * @summary Retorna a conta única do usuário
- */
-
-export function useFindMe<
-	TData = Awaited<ReturnType<typeof findMe>>,
-	TError = undefined | undefined,
->(options?: {
-	query?: UseQueryOptions<Awaited<ReturnType<typeof findMe>>, TError, TData>;
-}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-	const queryOptions = getFindMeQueryOptions(options);
+	const queryOptions = getFindMeAccountQueryOptions(options);
 
 	const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
 		queryKey: QueryKey;

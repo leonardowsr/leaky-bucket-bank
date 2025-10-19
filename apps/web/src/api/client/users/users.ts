@@ -94,7 +94,7 @@ export function useFindAll<
  * Retorna os dados do próprio usuário autenticado via token JWT
  * @summary Obtém dados do usuário autenticado
  */
-export const findMe = (signal?: AbortSignal) => {
+export const findMeUser = (signal?: AbortSignal) => {
 	return axiosClient<UserResponseDto>({
 		url: "/users/me",
 		method: "GET",
@@ -102,45 +102,55 @@ export const findMe = (signal?: AbortSignal) => {
 	});
 };
 
-export const getFindMeQueryKey = () => {
+export const getFindMeUserQueryKey = () => {
 	return ["/users/me"] as const;
 };
 
-export const getFindMeQueryOptions = <
-	TData = Awaited<ReturnType<typeof findMe>>,
+export const getFindMeUserQueryOptions = <
+	TData = Awaited<ReturnType<typeof findMeUser>>,
 	TError = undefined | undefined,
 >(options?: {
-	query?: UseQueryOptions<Awaited<ReturnType<typeof findMe>>, TError, TData>;
+	query?: UseQueryOptions<
+		Awaited<ReturnType<typeof findMeUser>>,
+		TError,
+		TData
+	>;
 }) => {
 	const { query: queryOptions } = options ?? {};
 
-	const queryKey = queryOptions?.queryKey ?? getFindMeQueryKey();
+	const queryKey = queryOptions?.queryKey ?? getFindMeUserQueryKey();
 
-	const queryFn: QueryFunction<Awaited<ReturnType<typeof findMe>>> = ({
+	const queryFn: QueryFunction<Awaited<ReturnType<typeof findMeUser>>> = ({
 		signal,
-	}) => findMe(signal);
+	}) => findMeUser(signal);
 
 	return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-		Awaited<ReturnType<typeof findMe>>,
+		Awaited<ReturnType<typeof findMeUser>>,
 		TError,
 		TData
 	> & { queryKey: QueryKey };
 };
 
-export type FindMeQueryResult = NonNullable<Awaited<ReturnType<typeof findMe>>>;
-export type FindMeQueryError = undefined | undefined;
+export type FindMeUserQueryResult = NonNullable<
+	Awaited<ReturnType<typeof findMeUser>>
+>;
+export type FindMeUserQueryError = undefined | undefined;
 
 /**
  * @summary Obtém dados do usuário autenticado
  */
 
-export function useFindMe<
-	TData = Awaited<ReturnType<typeof findMe>>,
+export function useFindMeUser<
+	TData = Awaited<ReturnType<typeof findMeUser>>,
 	TError = undefined | undefined,
 >(options?: {
-	query?: UseQueryOptions<Awaited<ReturnType<typeof findMe>>, TError, TData>;
+	query?: UseQueryOptions<
+		Awaited<ReturnType<typeof findMeUser>>,
+		TError,
+		TData
+	>;
 }): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-	const queryOptions = getFindMeQueryOptions(options);
+	const queryOptions = getFindMeUserQueryOptions(options);
 
 	const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
 		queryKey: QueryKey;
