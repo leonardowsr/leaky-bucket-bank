@@ -18,8 +18,8 @@ export class TransactionConsumer {
 	) {
 		const channel: ChannelWrapper = context.getChannelRef();
 		const originalMsg = context.getMessage();
-		await new Promise((res) => setTimeout(res, 4000));
-		console.info("Received message:", data);
+		// faz uma simulação de tempo para ficar entre 1 e 2 segundos
+		await new Promise((res) => setTimeout(res, Math.random() * 1000 + 1000));
 		try {
 			const result = await this.transactionConsumerService.consumer(data);
 			channel.ack(originalMsg);

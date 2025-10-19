@@ -1,4 +1,5 @@
-import { Public } from "@api/config/configuration";
+import { configuration, Public } from "@api/config/configuration";
+import { COOKIE_OPTIONS } from "@api/lib/constants";
 import {
 	Body,
 	Controller,
@@ -8,17 +9,10 @@ import {
 	Res,
 } from "@nestjs/common";
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
-import { CookieOptions, Response } from "express";
+import { Response } from "express";
 import { AuthService } from "./auth.service";
 import { LoginDto, RefreshTokenDto, RegisterDto } from "./dto/auth.dto";
 import { RegisterResponseDto } from "./dto/auth-response.dto";
-
-const COOKIE_OPTIONS: CookieOptions = {
-	httpOnly: true,
-	secure: true,
-	sameSite: "none",
-	maxAge: 7 * 24 * 60 * 60 * 1000, // 7 dias,
-};
 
 @ApiTags("auth")
 @Controller("auth")
@@ -55,7 +49,7 @@ export class AuthController {
 
 		res.cookie("access_token", access_token, {
 			...COOKIE_OPTIONS,
-			maxAge: 60 * 60 * 1000, // 1 hora
+			maxAge: configuration.jwt.accessExpire,
 		});
 		res.cookie("refresh_token", refresh_token, COOKIE_OPTIONS);
 

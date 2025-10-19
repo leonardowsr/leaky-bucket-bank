@@ -4,6 +4,7 @@ import { AuthModule } from "@modules/auth/auth.module";
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 import { AccountModule } from "./modules/account/account.module";
+import { AccountKeyModule } from "./modules/account-key/account-key.module";
 import { TransactionModule } from "./modules/transaction/transaction.module";
 
 @Module({
@@ -17,6 +18,7 @@ import { TransactionModule } from "./modules/transaction/transaction.module";
 		PrismaModule,
 		AccountModule,
 		TransactionModule,
+		AccountKeyModule,
 	],
 })
 export class AppModule {}

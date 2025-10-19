@@ -219,7 +219,7 @@ export class TransactionController {
 	})
 	@Sse(":transactionId/sse")
 	async sse(@Param("transactionId") transactionId: string) {
-		return interval(100).pipe(
+		return interval(500).pipe(
 			switchMap(() =>
 				this.transactionService.transactionStatusUpdateMapper(transactionId),
 			),

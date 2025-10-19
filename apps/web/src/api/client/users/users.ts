@@ -25,7 +25,7 @@ type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
  * @summary Lista todos os usuários
  */
 export const findAll = (params?: FindAllParams, signal?: AbortSignal) => {
-	return axiosClient<UserResponseDto>({
+	return axiosClient<UserResponseDto[]>({
 		url: "/users",
 		method: "GET",
 		params,

@@ -1,5 +1,6 @@
 import { configuration } from "@api/config/configuration";
 import { RefreshTokenPayload } from "@api/interfaces/auth";
+import { generateAccoutNumber } from "@api/lib/utils";
 import { PrismaService } from "@api/modules/_prisma/prisma.service";
 import {
 	ConflictException,
@@ -63,15 +64,22 @@ export class AuthService {
 					name: registerDto.name,
 				},
 			});
-			const randomAccountNumber = Math.floor(
-				100000 + Math.random() * 900000,
-			).toString();
+			const randomAccountNumber = generateAccoutNumber();
 
-			await ctx.account.create({
+			const account = await ctx.account.create({
 				data: {
 					accountNumber: randomAccountNumber,
 					balance: 100,
 					userId: user.id,
+				},
+			});
+
+			await ctx.accountKey.create({
+				data: {
+					account: {
+						connect: { id: account.id },
+					},
+					key: account.accountNumber,
 				},
 			});
 		});

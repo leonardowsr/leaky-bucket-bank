@@ -530,3 +530,81 @@ export const useRemove = <
 
 	return useMutation(mutationOptions);
 };
+/**
+ * Aprova um empréstimo e atualiza o saldo da conta
+ * @summary Solicita um empréstimo para uma conta
+ */
+export const loanRequest = (id: string, signal?: AbortSignal) => {
+	return axiosClient<void>({
+		url: `/account/${id}/loan`,
+		method: "POST",
+		signal,
+	});
+};
+
+export const getLoanRequestMutationOptions = <
+	TError = undefined | undefined,
+	TContext = unknown,
+>(options?: {
+	mutation?: UseMutationOptions<
+		Awaited<ReturnType<typeof loanRequest>>,
+		TError,
+		{ id: string },
+		TContext
+	>;
+}): UseMutationOptions<
+	Awaited<ReturnType<typeof loanRequest>>,
+	TError,
+	{ id: string },
+	TContext
+> => {
+	const mutationKey = ["loanRequest"];
+	const { mutation: mutationOptions } = options
+		? options.mutation &&
+			"mutationKey" in options.mutation &&
+			options.mutation.mutationKey
+			? options
+			: { ...options, mutation: { ...options.mutation, mutationKey } }
+		: { mutation: { mutationKey } };
+
+	const mutationFn: MutationFunction<
+		Awaited<ReturnType<typeof loanRequest>>,
+		{ id: string }
+	> = (props) => {
+		const { id } = props ?? {};
+
+		return loanRequest(id);
+	};
+
+	return { mutationFn, ...mutationOptions };
+};
+
+export type LoanRequestMutationResult = NonNullable<
+	Awaited<ReturnType<typeof loanRequest>>
+>;
+
+export type LoanRequestMutationError = undefined | undefined;
+
+/**
+ * @summary Solicita um empréstimo para uma conta
+ */
+export const useLoanRequest = <
+	TError = undefined | undefined,
+	TContext = unknown,
+>(options?: {
+	mutation?: UseMutationOptions<
+		Awaited<ReturnType<typeof loanRequest>>,
+		TError,
+		{ id: string },
+		TContext
+	>;
+}): UseMutationResult<
+	Awaited<ReturnType<typeof loanRequest>>,
+	TError,
+	{ id: string },
+	TContext
+> => {
+	const mutationOptions = getLoanRequestMutationOptions(options);
+
+	return useMutation(mutationOptions);
+};

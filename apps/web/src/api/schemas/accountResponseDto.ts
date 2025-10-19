@@ -5,6 +5,7 @@
  * API RESTful completa para gerenciamento bancário com suporte a autenticação JWT, operações de contas, transações e gerenciamento de usuários.
  * OpenAPI spec version: 1.0.0
  */
+import type { AccountKeyDto } from "./accountKeyDto";
 
 export interface AccountResponseDto {
 	/** UUID único da conta */
@@ -18,6 +19,8 @@ export interface AccountResponseDto {
 	 * @minimum 0
 	 */
 	balance: number;
+	/** Chaves PIX vinculadas à conta */
+	accountKeys?: AccountKeyDto[];
 	/** Data de criação da conta */
 	createdAt: string;
 	/** Data da última atualização da conta */

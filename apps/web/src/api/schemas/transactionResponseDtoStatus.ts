@@ -14,7 +14,7 @@ export type TransactionResponseDtoStatus =
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const TransactionResponseDtoStatus = {
-	recused: "recused",
+	rejected: "rejected",
 	approved: "approved",
 	pending: "pending",
 } as const;

@@ -11,7 +11,6 @@ export default defineConfig({
 			schemas: "./apps/web/src/api/schemas", // onde salvar os schemas,
 			clean: true,
 			biome: true,
-
 			override: {
 				mutator: {
 					path: "./apps/web/src/api/axiosClient.ts",

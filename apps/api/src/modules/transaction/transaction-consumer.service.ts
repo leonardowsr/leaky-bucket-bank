@@ -11,7 +11,10 @@ export class TransactionConsumerService {
 			const result = await this.transactionService.updateTransaction(data);
 			return await this.transactionService.updateStatus(result.id, "approved");
 		} catch (error) {
-			await this.transactionService.updateStatus(data.transactionId, "recused");
+			await this.transactionService.updateStatus(
+				data.transactionId,
+				"rejected",
+			);
 			throw error;
 		}
 	}

@@ -2,15 +2,15 @@
 
 import { useForm } from "@tanstack/react-form";
 import { useQueryClient } from "@tanstack/react-query";
+import { Check } from "lucide-react";
 import { useEffect, useState } from "react";
+import { getFindMeQueryKey, useFindMe } from "@/api/client/account/account";
 import {
-	getFindMeQueryKey,
-	useFindAll,
-	useFindMe,
-} from "@/api/client/account/account";
+	getFindByKeyQueryKey,
+	useFindByKey,
+} from "@/api/client/account-keys/account-keys";
 import {
 	getFindAllByAccountQueryKey,
-	getSseQueryKey,
 	useCreate,
 } from "@/api/client/transaction/transaction";
 import { Button } from "@/components/ui/button";
@@ -23,105 +23,138 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
 import { useTransactionSubscription } from "@/hooks/use-transaction-subscription";
-import { moneyToString } from "@/lib/utils";
+import { getErrorMessage, moneyToString } from "@/lib/utils";
 import { TransactionProgress } from "./loading-transaction";
 
 interface NewTransactionDialogContentProps {
 	onClose: () => void;
 }
 
+interface RecipientInfo {
+	accountNumber: string;
+	recipientName: string;
+	receiverKey: string;
+}
+
 export function NewTransactionDialogContent({
 	onClose,
 }: NewTransactionDialogContentProps) {
-	const [transactionId, setTransactionId] = useState<string | "">("");
-	const QueryClient = useQueryClient();
+	const [transactionId, setTransactionId] = useState<string>("");
+	const [step, setStep] = useState<1 | 2>(1);
+	const [recipientInfo, setRecipientInfo] = useState<RecipientInfo | null>(
+		null,
+	);
+	const [searchKey, setSearchKey] = useState<string>("");
 
+	const QueryClient = useQueryClient();
 	const { data: meAccount } = useFindMe();
+
+	const { data: accountKeyData, isFetching: isFetchingKey } = useFindByKey(
+		{ key: searchKey },
+		{
+			query: {
+				queryKey: [...getFindByKeyQueryKey(), searchKey],
+				enabled: !!searchKey,
+				retry: false,
+			},
+		},
+	);
 
 	const senderId = meAccount?.id;
 	const { transaction, isLoading, isFinished } =
 		useTransactionSubscription(transactionId);
-
-	const { data: allAccounts = [] } = useFindAll();
-
 	const { mutate: createTransaction, isPending } = useCreate();
 
 	const form = useForm({
-		defaultValues: {
-			receiverId: "",
-			amount: "",
-		},
+		defaultValues: { receiverKey: "", amount: "" },
 		onSubmit: async ({ value }) => {
-			if (!senderId) {
-				alert("Conta de envio não encontrada");
-				return;
+			if (step === 1) {
+				if (!value.receiverKey) return;
+				if (meAccount?.accountKeys?.some((k) => k.key === value.receiverKey)) {
+					getErrorMessage(
+						new Error("Você não pode enviar dinheiro para si mesmo"),
+						"Erro",
+					);
+					return;
+				}
+				setSearchKey(value.receiverKey);
+			} else {
+				if (!senderId) {
+					alert("Conta de envio não encontrada");
+					return;
+				}
+				const amountInCentavos = Math.round(
+					(value.amount as unknown as number) * 100,
+				);
+				createTransaction(
+					{
+						data: {
+							amount: amountInCentavos,
+							senderId,
+							receiverKey: value.receiverKey,
+						},
+					},
+					{
+						onSuccess: (data) => setTransactionId(data.transactionId),
+						onError: (error) =>
+							getErrorMessage(error, "Erro ao criar transação"),
+					},
+				);
 			}
-
-			const amountInCentavos = Math.round(
-				(value.amount as unknown as number) * 100,
-			);
-
-			createTransaction(
-				{
-					data: {
-						amount: amountInCentavos,
-						senderId,
-						receiverId: value.receiverId,
-					},
-				},
-				{
-					onSuccess: (data) => {
-						form.reset();
-						setTransactionId(data.transactionId);
-					},
-					onError: (error) => {
-						console.error("Erro ao criar transação:", error);
-					},
-				},
-			);
 		},
 	});
 
 	useEffect(() => {
-		if (isFinished) {
-			QueryClient.removeQueries({
-				queryKey: getSseQueryKey(transactionId),
+		if (accountKeyData && searchKey && !isFetchingKey) {
+			setRecipientInfo({
+				accountNumber: accountKeyData.accountNumber ?? "",
+				recipientName: accountKeyData.recipientName ?? "",
+				receiverKey: accountKeyData.key ?? "",
 			});
-			QueryClient.invalidateQueries({
-				queryKey: getFindMeQueryKey(),
-			});
-			QueryClient.invalidateQueries({
-				queryKey: getFindAllByAccountQueryKey(meAccount?.id),
-			});
-			const timer = setTimeout(async () => {
-				setTransactionId("");
-				onClose();
-				form.reset();
-			}, 3000);
-			return () => {
-				clearTimeout(timer);
-			};
+			setStep(2);
+			setSearchKey("");
 		}
-	}, [isFinished, transactionId, meAccount?.id, QueryClient, onClose, form]);
+	}, [accountKeyData, searchKey, isFetchingKey]);
 
-	const availableAccounts = allAccounts.filter(
-		(account) => account?.id !== senderId,
-	);
+	// Fecha automaticamente após finalizar (sem estados extras)
+	useEffect(() => {
+		if (!transactionId || !isFinished) return;
+		QueryClient.invalidateQueries({ queryKey: getFindMeQueryKey() });
+		QueryClient.invalidateQueries({
+			queryKey: getFindAllByAccountQueryKey(meAccount?.id),
+		});
+		QueryClient.removeQueries({
+			queryKey: ["transaction-sse", transactionId],
+		});
+		const timer = setTimeout(() => {
+			onClose();
+		}, 1500);
 
-	const showLoading = isLoading || isFinished;
+		return () => clearTimeout(timer);
+	}, [isFinished, transactionId, QueryClient, meAccount?.id, onClose]);
+
+	const showLoading = (isLoading || isFinished) && !!transactionId;
 
 	return (
-		<DialogContent showCloseButton={!isLoading}>
+		<DialogContent
+			showCloseButton={!showLoading}
+			onPointerDownOutside={(e) => {
+				if (showLoading) e.preventDefault();
+			}}
+		>
 			<DialogHeader>
 				<DialogTitle>
-					{!isFinished && !isLoading && "Nova Transação"}
+					{!showLoading && step === 1 && "Nova Transação"}
+					{!showLoading && step === 2 && "Confirmar Transação"}
 					{isFinished && "Resultado da transação"}
-					{isLoading && "Aguardando..."}
+					{isLoading && !isFinished && "Aguardando..."}
 				</DialogTitle>
-				{!isFinished && !isLoading && (
+				{!showLoading && (
 					<DialogDescription>
-						Envie dinheiro para outra conta bancária
+						{step === 1 && "Insira os dados do destinatário"}
+						{step === 2 && "Revise os dados e confirme a transação"}
 						<br />
 						Saldo disponível:{" "}
 						<span className="font-semibold text-primary">
@@ -130,19 +163,27 @@ export function NewTransactionDialogContent({
 					</DialogDescription>
 				)}
 			</DialogHeader>
-			{showLoading || isFinished ? (
-				<div className="flex h-40 items-center justify-center">
-					<TransactionProgress
-						running={isLoading}
-						finalLabel={
-							transaction?.status === "approved"
-								? "Transação aprovada!"
-								: transaction?.status === "rejected"
-									? "Transação recusada."
-									: "Transação concluída."
-						}
-					/>
-				</div>
+
+			{showLoading ? (
+				<>
+					<div className="flex h-40 items-center justify-center">
+						<TransactionProgress
+							running={isLoading && !isFinished}
+							finalLabel={
+								transaction?.status === "approved"
+									? "Transação aprovada!"
+									: transaction?.status === "rejected"
+										? "Transação recusada."
+										: "Transação concluída."
+							}
+						/>
+					</div>
+					{isFinished && (
+						<div className="text-center text-muted-foreground text-xs">
+							Você já pode voltar ao dashboard. Obrigado por aguardar.
+						</div>
+					)}
+				</>
 			) : (
 				<form
 					onSubmit={(e) => {
@@ -151,88 +192,136 @@ export function NewTransactionDialogContent({
 					}}
 					className="space-y-4"
 				>
-					{/* Conta de Destino */}
-					<form.Field
-						name="receiverId"
-						validators={{
-							onChange: ({ value }) =>
-								!value ? "Selecione uma conta destinatária" : undefined,
-						}}
-					>
-						{(field) => (
-							<div className="space-y-2">
-								<Label htmlFor={field.name}>Para qual conta?</Label>
-								<select
-									id={field.name}
-									value={field.state.value}
-									onChange={(e) => field.handleChange(e.target.value)}
-									className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:font-medium file:text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-								>
-									<option value="">Selecione a conta destinatária</option>
-									{availableAccounts.length > 0 ? (
-										availableAccounts.map((account) => (
-											<option key={account?.id} value={account?.id}>
-												{account?.accountNumber}
-											</option>
-										))
-									) : (
-										<option disabled>Nenhuma conta disponível</option>
+					{step === 1 ? (
+						<>
+							<form.Field
+								name="receiverKey"
+								validators={{
+									onChange: ({ value }) =>
+										!value ? "Digite a chave PIX do destinatário" : undefined,
+								}}
+							>
+								{(field) => (
+									<div className="space-y-2">
+										<Label htmlFor={field.name}>
+											Chave PIX do destinatário
+										</Label>
+										<Input
+											id={field.name}
+											placeholder="email@exemplo.com, CPF, telefone..."
+											value={field.state.value}
+											onChange={(e) => field.handleChange(e.target.value)}
+										/>
+										{field.state.meta.errors?.length > 0 && (
+											<p className="text-red-500 text-sm">
+												{field.state.meta.errors[0]}
+											</p>
+										)}
+									</div>
+								)}
+							</form.Field>
+
+							<form.Field
+								name="amount"
+								validators={{
+									onChange: ({ value }) => {
+										if (!value) return "Valor é obrigatório";
+										const num = Number.parseFloat(value);
+										if (Number.isNaN(num) || num <= 0)
+											return "Digite um valor válido";
+										if (num * 100 > (meAccount?.balance ?? 0)) {
+											return "Saldo insuficiente";
+										}
+										return undefined;
+									},
+								}}
+							>
+								{(field) => (
+									<div className="space-y-2">
+										<Label htmlFor={field.name}>Valor (em R$)</Label>
+										<Input
+											id={field.name}
+											type="number"
+											step="0.01"
+											min="0"
+											placeholder="0,00"
+											value={field.state.value}
+											onChange={(e) => field.handleChange(e.target.value)}
+										/>
+										{field.state.meta.errors?.length > 0 && (
+											<p className="text-red-500 text-sm">
+												{field.state.meta.errors[0]}
+											</p>
+										)}
+									</div>
+								)}
+							</form.Field>
+						</>
+					) : (
+						<div className="space-y-4 rounded-lg border p-4">
+							<div className="flex items-start gap-3">
+								<div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100 dark:bg-green-900">
+									<Check className="h-5 w-5 text-green-600 dark:text-green-400" />
+								</div>
+								<div className="flex-1 space-y-1">
+									<p className="font-medium text-sm">Destinatário</p>
+									<p className="font-semibold text-lg">
+										{recipientInfo?.recipientName}
+									</p>
+									<p className="text-muted-foreground text-sm">
+										Conta: {recipientInfo?.accountNumber}
+									</p>
+									<p className="text-muted-foreground text-sm">
+										Chave: {recipientInfo?.receiverKey}
+									</p>
+								</div>
+							</div>
+
+							<Separator />
+
+							<div className="space-y-1">
+								<p className="font-medium text-sm">Valor a transferir</p>
+								<p className="font-bold text-2xl text-primary">
+									{moneyToString(
+										Math.round(
+											(form.state.values.amount as unknown as number) * 100,
+										),
 									)}
-								</select>
-								{field.state.meta.errors?.length > 0 && (
-									<p className="text-red-500 text-sm">
-										{field.state.meta.errors[0]}
-									</p>
-								)}
+								</p>
 							</div>
-						)}
-					</form.Field>
-					{/* Valor */}
-					<form.Field
-						name="amount"
-						validators={{
-							onChange: ({ value }) => {
-								if (!value) return "Valor é obrigatório";
-								const num = Number.parseFloat(value);
-								if (Number.isNaN(num) || num <= 0)
-									return "Digite um valor válido";
-								return undefined;
-							},
-						}}
-					>
-						{(field) => (
-							<div className="space-y-2">
-								<Label htmlFor={field.name}>Valor (em R$)</Label>
-								<Input
-									id={field.name}
-									type="number"
-									step="0.01"
-									min="0"
-									placeholder="0,00"
-									value={field.state.value}
-									onChange={(e) => field.handleChange(e.target.value)}
-								/>
-								{field.state.meta.errors?.length > 0 && (
-									<p className="text-red-500 text-sm">
-										{field.state.meta.errors[0]}
-									</p>
-								)}
-							</div>
-						)}
-					</form.Field>
-					{/* Botões */}
+						</div>
+					)}
+
 					<DialogFooter className="mt-6">
-						<Button
-							type="button"
-							variant="outline"
-							onClick={onClose}
-							disabled={isPending}
-						>
-							Cancelar
-						</Button>
-						<Button type="submit" disabled={isPending}>
-							{isPending ? "Enviando..." : "Enviar"}
-						</Button>
+						{step === 1 ? (
+							<>
+								<Button
+									type="button"
+									variant="outline"
+									onClick={onClose}
+									disabled={isPending || isFetchingKey}
+								>
+									Cancelar
+								</Button>
+								<Button type="submit" disabled={isPending || isFetchingKey}>
+									{isFetchingKey ? "Verificando..." : "Continuar"}
+								</Button>
+							</>
+						) : (
+							<>
+								<Button
+									type="button"
+									variant="outline"
+									onClick={() => setStep(1)}
+									disabled={isPending}
+								>
+									Voltar
+								</Button>
+								<Button type="submit" disabled={isPending}>
+									{isPending ? "Enviando..." : "Confirmar Transação"}
+								</Button>
+							</>
+						)}
 					</DialogFooter>
 				</form>
 			)}

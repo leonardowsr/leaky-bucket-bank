@@ -31,7 +31,7 @@ export class TransactionResponseDto {
 
 	@ApiProperty({
 		example: "pending",
-		enum: ["recused", "approved", "pending"],
+		enum: ["rejected", "approved", "pending"],
 		description: "Status da transação",
 	})
 	status: string;

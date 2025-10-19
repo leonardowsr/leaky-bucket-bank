@@ -29,13 +29,14 @@ model User {
 model Account {
   id            String @id @default(uuid())
   accountNumber String @unique
-  balance       Int
+  balance       Int    @default(0)
 
   user   User   @relation(fields: [userId], references: [id])
   userId String @unique
 
   sentTransactions     Transaction[] @relation("SentTransactions")
   receivedTransactions Transaction[] @relation("ReceivedTransactions")
+  accountKeys          accountKey[]
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -54,11 +55,23 @@ model Transaction {
 
   status transactionStatus @default(pending)
 
-  createdAt DateTime @default(now())
+  processedAt DateTime?
+  createdAt   DateTime  @default(now())
+}
+
+model accountKey {
+  id  String @id @default(uuid())
+  key String @unique
+
+  account   Account @relation(fields: [accountId], references: [id])
+  accountId String
+
+  createdAt DateTime  @default(now())
+  deletedAt DateTime?
 }
 
 enum transactionStatus {
   approved
-  recused
+  rejected
   pending
 }

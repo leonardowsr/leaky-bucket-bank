@@ -5,6 +5,7 @@
  * API RESTful completa para gerenciamento bancário com suporte a autenticação JWT, operações de contas, transações e gerenciamento de usuários.
  * OpenAPI spec version: 1.0.0
  */
+import type { AccountInfoDto } from "./accountInfoDto";
 
 export interface UserResponseDto {
 	/** UUID único do usuário */
@@ -13,8 +14,14 @@ export interface UserResponseDto {
 	name: string;
 	/** Email do usuário */
 	email: string;
+	/** Informações da conta bancária do usuário */
+	account?: AccountInfoDto;
 	/** Data de criação do usuário */
-	createdAt: string;
+	createdAt?: string;
 	/** Data da última atualização do usuário */
-	updatedAt: string;
+	updatedAt?: string;
+	/** Quantidade de tokens disponíveis para o usuário */
+	tokenCount: number;
+	/** Data e hora do último token consumido pelo usuário */
+	usedTokenAt: string;
 }

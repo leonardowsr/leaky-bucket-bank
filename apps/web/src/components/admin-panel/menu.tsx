@@ -2,7 +2,8 @@
 
 import { Ellipsis, LogOut } from "lucide-react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import { CollapseMenuButton } from "@/components/admin-panel/collapse-menu-button";
 import { NewTransactionDialog } from "@/components/transaction/new-transaction-dialog";
 import { Button } from "@/components/ui/button";

@@ -3,7 +3,7 @@ import { getTokens } from "@/actions/get-tokens";
 
 export const axiosInstance = axios.create({
 	baseURL: process.env.NEXT_PUBLIC_SERVER_URL,
-	withCredentials: true, // Automaticamente envia e recebe cookies
+	withCredentials: true,
 });
 
 export interface ApiErrorResponse {
@@ -52,7 +52,6 @@ axiosInstance.interceptors.response.use(
 				return axiosClient(originalRequest);
 			} catch (refreshError) {
 				console.error("Refresh token falhou", refreshError);
-				// Se chegou em 2 retries, faz logout
 				if (originalRequest._retryCount >= 2) {
 					window.location.href = "/api/logout";
 				}
@@ -75,11 +74,15 @@ export const axiosClient = async <T = unknown>(
 		const response = await axiosInstance.request<T>(config);
 		return response.data;
 	} catch (error) {
-		// Re-throw com informações estruturadas
 		if (axios.isAxiosError(error)) {
 			const apiError: AxiosError<ApiErrorResponse> = error;
-			// Preserva toda a estrutura do erro
-			throw apiError;
+			throw (
+				apiError.response?.data || {
+					error: "Internal Server Error",
+					message: "Erro interno no servidor, tente novamente mais tarde.",
+					status: 500,
+				}
+			);
 		}
 		throw error;
 	}

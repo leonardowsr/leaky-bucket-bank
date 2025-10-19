@@ -8,11 +8,11 @@ export const configuration = {
 	jwtSecret: process.env.JWT_SECRET || "defaultSecret",
 	jwt: {
 		accessExpire: Number.parseInt(
-			process.env.ACCESS_TOKEN_EXPIRE || "36000", // 10 hours
+			process.env.ACCESS_TOKEN_EXPIRE || (60 * 60 * 3).toString(), // 3 hours
 			10,
 		),
 		refreshExpire: Number.parseInt(
-			process.env.REFRESH_TOKEN_EXPIRE || "172800", // 2 days
+			process.env.REFRESH_TOKEN_EXPIRE || (60 * 60 * 24 * 2).toString(), // 2 days
 			10,
 		),
 	},

@@ -1,5 +1,34 @@
 import { ApiProperty } from "@nestjs/swagger";
 
+export class AccountKeyEntity {
+	@ApiProperty({
+		example: "550e8400-e29b-41d4-a716-446655440003",
+		description: "UUID único da chave",
+		format: "uuid",
+	})
+	id: string;
+
+	@ApiProperty({
+		example: "user@email.com",
+		description: "Chave PIX",
+	})
+	key: string;
+
+	@ApiProperty({
+		example: "550e8400-e29b-41d4-a716-446655440000",
+		description: "UUID da conta",
+		format: "uuid",
+	})
+	accountId: string;
+
+	@ApiProperty({
+		example: "2024-10-16T00:00:00Z",
+		description: "Data de criação da chave",
+		format: "date-time",
+	})
+	createdAt: Date;
+}
+
 export class Account {
 	@ApiProperty({
 		example: "550e8400-e29b-41d4-a716-446655440000",
@@ -27,6 +56,13 @@ export class Account {
 		minimum: 0,
 	})
 	balance: number;
+
+	@ApiProperty({
+		type: [AccountKeyEntity],
+		description: "Chaves PIX vinculadas à conta",
+		required: false,
+	})
+	accountKeys?: AccountKeyEntity[];
 
 	@ApiProperty({
 		example: "2024-10-16T00:00:00Z",

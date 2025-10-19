@@ -13,7 +13,7 @@ import {
 export class TransactionService {
 	constructor(private prisma: PrismaService) {}
 
-	async updateStatus(id: string, status: "approved" | "recused") {
+	async updateStatus(id: string, status: "approved" | "rejected") {
 		return this.prisma.transaction.update({
 			where: { id },
 			data: {
@@ -23,11 +23,21 @@ export class TransactionService {
 	}
 
 	async createPendingTransaction(createTransactionDto: CreateTransactionDto) {
+		const accountReceiver = await this.prisma.accountKey.findUnique({
+			where: { key: createTransactionDto.receiverKey, deletedAt: null },
+			select: {
+				account: {
+					select: { id: true, deletedAt: true },
+				},
+			},
+		});
+		const receiverId = accountReceiver?.account.id;
+
 		return this.prisma.transaction.create({
 			data: {
 				amount: createTransactionDto.amount,
 				receiver: {
-					connect: { id: createTransactionDto.receiverId },
+					connect: { id: receiverId },
 				},
 				sender: {
 					connect: { id: createTransactionDto.senderId },
@@ -37,6 +47,23 @@ export class TransactionService {
 	}
 
 	async updateTransaction(updateTransactionDto: UpdateTransactionDto) {
+		const receiverAccountKey = await this.prisma.accountKey.findUnique({
+			where: { key: updateTransactionDto.receiverKey, deletedAt: null },
+			select: {
+				account: {
+					select: { id: true, deletedAt: true },
+				},
+			},
+		});
+
+		if (!receiverAccountKey || receiverAccountKey.account.deletedAt) {
+			throw new NotFoundException(
+				"Conta destinatária não encontrada com a chave PIX fornecida",
+			);
+		}
+
+		const receiverId = receiverAccountKey.account.id;
+
 		const { transaction } = await this.prisma.$transaction(async (ctx) => {
 			const updatedSender = await ctx.account.update({
 				where: { id: updateTransactionDto.senderId },
@@ -48,7 +75,7 @@ export class TransactionService {
 			});
 
 			const updatedReceiver = await ctx.account.update({
-				where: { id: updateTransactionDto.receiverId },
+				where: { id: receiverId },
 				data: {
 					balance: {
 						increment: updateTransactionDto.amount,
@@ -61,7 +88,7 @@ export class TransactionService {
 				data: {
 					amount: updateTransactionDto.amount,
 					receiver: {
-						connect: { id: updateTransactionDto.receiverId },
+						connect: { id: receiverId },
 					},
 					sender: {
 						connect: { id: updateTransactionDto.senderId },
@@ -75,22 +102,48 @@ export class TransactionService {
 	}
 
 	async validateTransaction(createTransactionDto: CreateTransactionDto) {
-		const [sender, receiver] = await Promise.all([
+		const [sender, receiverAccountKey] = await Promise.all([
 			this.prisma.account.findUnique({
 				where: { id: createTransactionDto.senderId, deletedAt: null },
 				select: { balance: true, id: true, userId: true },
 			}),
-			this.prisma.account.findUnique({
-				where: { id: createTransactionDto.receiverId, deletedAt: null },
-				select: { balance: true, id: true },
+			this.prisma.accountKey.findUnique({
+				where: {
+					key: createTransactionDto.receiverKey,
+					deletedAt: null,
+					account: {
+						deletedAt: null,
+					},
+				},
+				select: {
+					account: {
+						select: { balance: true, id: true, deletedAt: true },
+					},
+				},
 			}),
 		]);
 
-		if (!sender) throw new NotFoundException("Sender não encontrado");
-		if (!receiver) throw new NotFoundException("Receiver não encontrado");
+		if (!sender) {
+			throw new NotFoundException("Conta remetente não encontrada");
+		}
 
-		if (sender.balance < createTransactionDto.amount)
+		if (!receiverAccountKey) {
+			throw new NotFoundException(
+				"Conta destinatária não encontrada com a chave PIX fornecida",
+			);
+		}
+
+		const receiver = receiverAccountKey.account;
+
+		if (sender.id === receiver.id) {
+			throw new UnprocessableEntityException(
+				"Não é possível transferir para a mesma conta",
+			);
+		}
+
+		if (sender.balance < createTransactionDto.amount) {
 			throw new UnprocessableEntityException("Saldo insuficiente");
+		}
 	}
 
 	async findAll() {

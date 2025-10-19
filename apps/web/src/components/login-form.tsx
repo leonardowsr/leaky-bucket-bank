@@ -1,12 +1,13 @@
 "use client";
 import { useForm } from "@tanstack/react-form";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import { useId } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { useLogin } from "@/api/client/auth/auth";
 import { Button } from "@/components/ui/button";
+
 import {
 	Card,
 	CardContent,
@@ -14,8 +15,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { getErrorMessage } from "@/hooks/api-error";
-import { cn } from "@/lib/utils";
+import { cn, getErrorMessage } from "@/lib/utils";
 import {
 	Field,
 	FieldDescription,
@@ -41,8 +41,7 @@ export function LoginForm({
 	const loginMutation = useLogin({
 		mutation: {
 			onError(error) {
-				const message = getErrorMessage(error, "Erro ao fazer login");
-				toast.error(message);
+				getErrorMessage(error, "Erro ao fazer login");
 			},
 			onSuccess() {
 				toast.success("Login realizado com sucesso!");
@@ -75,9 +74,7 @@ export function LoginForm({
 					data: value,
 				});
 
-				// Cookies são setados automaticamente pelo servidor
-				// Redireciona para home
-				router.push("/");
+				router.push("/dashboard");
 			} catch (error) {
 				// Erro já é tratado no onError do mutation
 				console.error("Erro ao fazer login:", error);
@@ -89,9 +86,9 @@ export function LoginForm({
 		<div className={cn("flex flex-col gap-6", className)} {...props}>
 			<Card>
 				<CardHeader>
-					<CardTitle>Login to your account</CardTitle>
+					<CardTitle>Entre com a sua conta</CardTitle>
 					<CardDescription>
-						Enter your email below to login to your account
+						Insira seu email abaixo para fazer login na sua conta
 					</CardDescription>
 				</CardHeader>
 				<CardContent>
@@ -143,13 +140,7 @@ export function LoginForm({
 								{(field) => (
 									<Field>
 										<div className="flex items-center">
-											<FieldLabel htmlFor={passwordId}>Password</FieldLabel>
-											<Link
-												href="#"
-												className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
-											>
-												Forgot your password?
-											</Link>
+											<FieldLabel htmlFor={passwordId}>Senha</FieldLabel>
 										</div>
 										<Input
 											id={passwordId}
@@ -173,15 +164,15 @@ export function LoginForm({
 									disabled={loginMutation.isPending}
 									className="w-full"
 								>
-									{loginMutation.isPending ? "Entrando..." : "Login"}
+									{loginMutation.isPending ? "Entrando..." : "Entrar"}
 								</Button>
 								<FieldDescription className="text-center">
-									Don&apos;t have an account?{" "}
+									Não tem uma conta?{" "}
 									<Link
 										href="/register"
 										className="text-primary hover:underline"
 									>
-										Sign up
+										Criar conta
 									</Link>
 								</FieldDescription>
 							</Field>

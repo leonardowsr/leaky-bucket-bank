@@ -14,8 +14,8 @@ export interface UpdateTransactionDto {
 	amount: number;
 	/** UUID da conta remetente (de onde o dinheiro será debitado) */
 	senderId: string;
-	/** UUID da conta destinatária (para onde o dinheiro será creditado) */
-	receiverId: string;
+	/** Chave PIX da conta destinatária (para onde o dinheiro será creditado) */
+	receiverKey: string;
 	/** UUID único da transação a ser atualizada */
 	transactionId: string;
 }

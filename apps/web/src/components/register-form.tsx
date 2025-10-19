@@ -1,7 +1,7 @@
 "use client";
 import { useForm } from "@tanstack/react-form";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import { useId } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -14,8 +14,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { getErrorMessage } from "@/hooks/api-error";
-import { cn } from "@/lib/utils";
+import { cn, getErrorMessage } from "@/lib/utils";
 import {
 	Field,
 	FieldDescription,
@@ -25,19 +24,11 @@ import {
 } from "./ui/field";
 import { Input } from "./ui/input";
 
-const registerSchema = z
-	.object({
-		name: z.string().min(3, "Nome deve ter no mínimo 3 caracteres"),
-		email: z.string().email("Email inválido"),
-		password: z.string().min(8, "Senha deve ter no mínimo 8 caracteres"),
-		passwordConfirm: z
-			.string()
-			.min(8, "Confirmação de senha deve ter no mínimo 8 caracteres"),
-	})
-	.refine((data) => data.password === data.passwordConfirm, {
-		message: "As senhas não correspondem",
-		path: ["passwordConfirm"],
-	});
+const registerSchema = z.object({
+	name: z.string().min(3, "Nome deve ter no mínimo 3 caracteres"),
+	email: z.string().email("Email inválido"),
+	password: z.string().min(8, "Senha deve ter no mínimo 8 caracteres"),
+});
 
 export function RegisterForm({
 	className,
@@ -47,13 +38,11 @@ export function RegisterForm({
 	const nameId = useId();
 	const emailId = useId();
 	const passwordId = useId();
-	const passwordConfirmId = useId();
 
 	const registerMutation = useRegister({
 		mutation: {
 			onError(error) {
-				const message = getErrorMessage(error, "Erro ao registrar");
-				toast.error(message);
+				getErrorMessage(error, "Erro ao registrar");
 			},
 			onSuccess() {
 				toast.success("Conta criada com sucesso! Redirecionando para login...");
@@ -66,7 +55,6 @@ export function RegisterForm({
 			name: "",
 			email: "",
 			password: "",
-			passwordConfirm: "",
 		},
 		onSubmit: async ({ value }) => {
 			// Validar com zod
@@ -107,9 +95,9 @@ export function RegisterForm({
 		<div className={cn("flex flex-col gap-6", className)} {...props}>
 			<Card>
 				<CardHeader>
-					<CardTitle>Create your account</CardTitle>
+					<CardTitle>Crie sua conta</CardTitle>
 					<CardDescription>
-						Fill in the information below to create your account
+						Preencha as informações abaixo para criar sua conta
 					</CardDescription>
 				</CardHeader>
 				<CardContent>
@@ -132,7 +120,7 @@ export function RegisterForm({
 							>
 								{(field) => (
 									<Field>
-										<FieldLabel htmlFor={nameId}>Full Name</FieldLabel>
+										<FieldLabel htmlFor={nameId}>Nome</FieldLabel>
 										<Input
 											id={nameId}
 											type="text"
@@ -191,46 +179,9 @@ export function RegisterForm({
 							>
 								{(field) => (
 									<Field>
-										<FieldLabel htmlFor={passwordId}>Password</FieldLabel>
+										<FieldLabel htmlFor={passwordId}>Senha</FieldLabel>
 										<Input
 											id={passwordId}
-											type="password"
-											placeholder="••••••••"
-											value={field.state.value}
-											onChange={(e) => field.handleChange(e.target.value)}
-											onBlur={field.handleBlur}
-										/>
-										{field.state.meta.errorMap?.onChange && (
-											<FieldError>
-												{field.state.meta.errorMap.onChange}
-											</FieldError>
-										)}
-									</Field>
-								)}
-							</form.Field>
-
-							<form.Field
-								name="passwordConfirm"
-								validators={{
-									onChange: ({ value }) =>
-										validateField(
-											value,
-											z
-												.string()
-												.min(
-													8,
-													"Confirmação de senha deve ter no mínimo 8 caracteres",
-												),
-										),
-								}}
-							>
-								{(field) => (
-									<Field>
-										<FieldLabel htmlFor={passwordConfirmId}>
-											Confirm Password
-										</FieldLabel>
-										<Input
-											id={passwordConfirmId}
 											type="password"
 											placeholder="••••••••"
 											value={field.state.value}
@@ -255,9 +206,9 @@ export function RegisterForm({
 									{registerMutation.isPending ? "Registrando..." : "Register"}
 								</Button>
 								<FieldDescription className="text-center">
-									Already have an account?{" "}
+									Já tem uma conta?{" "}
 									<Link href="/login" className="text-primary hover:underline">
-										Sign in
+										Registrar
 									</Link>
 								</FieldDescription>
 							</Field>

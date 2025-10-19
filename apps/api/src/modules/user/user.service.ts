@@ -20,6 +20,20 @@ export class UserService {
 				id: true,
 				email: true,
 				name: true,
+				account: {
+					select: {
+						accountNumber: true,
+						balance: true,
+						accountKeys: {
+							where: {
+								deletedAt: null,
+							},
+							select: {
+								key: true,
+							},
+						},
+					},
+				},
 			},
 		});
 		return users;
@@ -51,6 +65,8 @@ export class UserService {
 			},
 			select: {
 				id: true,
+				tokenCount: true,
+				usedTokenAt: true,
 				email: true,
 				name: true,
 			},

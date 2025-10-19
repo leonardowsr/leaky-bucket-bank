@@ -132,7 +132,10 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/UserResponseDto"
+									"type": "array",
+									"items": {
+										"$ref": "#/components/schemas/UserResponseDto"
+									}
 								}
 							}
 						}
@@ -500,6 +503,42 @@
 				"tags": ["account"]
 			}
 		},
+		"/account/{id}/loan": {
+			"post": {
+				"description": "Aprova um empréstimo e atualiza o saldo da conta",
+				"operationId": "AccountController_loanRequest",
+				"parameters": [
+					{
+						"name": "id",
+						"required": true,
+						"in": "path",
+						"description": "UUID da conta para a qual o empréstimo está sendo solicitado",
+						"schema": {
+							"example": "550e8400-e29b-41d4-a716-446655440000",
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Empréstimo aprovado e saldo atualizado com sucesso"
+					},
+					"401": {
+						"description": "Token JWT ausente ou inválido"
+					},
+					"404": {
+						"description": "Conta não encontrada"
+					}
+				},
+				"security": [
+					{
+						"JWT-auth": []
+					}
+				],
+				"summary": "Solicita um empréstimo para uma conta",
+				"tags": ["account"]
+			}
+		},
 		"/transaction": {
 			"post": {
 				"description": "Cria uma nova transação entre duas contas. A transação é inicialmente criada com status PENDING e é enfileirada no RabbitMQ para processamento assíncrono",
@@ -734,6 +773,227 @@
 				"summary": "Fluxo SSE para atualizações de status da transação",
 				"tags": ["Transaction"]
 			}
+		},
+		"/account-key": {
+			"post": {
+				"description": "Cria uma nova chave PIX vinculada a uma conta",
+				"operationId": "AccountKeyController_create",
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/CreateAccountKeyDto"
+							}
+						}
+					}
+				},
+				"responses": {
+					"201": {
+						"description": "Chave PIX criada com sucesso",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/AccountKeyResponseDto"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Chave PIX já cadastrada"
+					},
+					"404": {
+						"description": "Conta não encontrada"
+					}
+				},
+				"summary": "Criar nova chave PIX",
+				"tags": ["Account Keys"]
+			},
+			"get": {
+				"description": "Lista todas as chaves PIX vinculadas às contas do usuário",
+				"operationId": "AccountKeyController_findAll",
+				"parameters": [],
+				"responses": {
+					"200": {
+						"description": "Lista de chaves PIX",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "array",
+									"items": {
+										"$ref": "#/components/schemas/AccountKeyResponseDto"
+									}
+								}
+							}
+						}
+					}
+				},
+				"summary": "Listar chaves PIX do usuário",
+				"tags": ["Account Keys"]
+			}
+		},
+		"/account-key/search": {
+			"get": {
+				"description": "Busca uma chave PIX pelo seu valor e retorna informações da conta vinculada",
+				"operationId": "AccountKeyController_findByKey",
+				"parameters": [
+					{
+						"name": "key",
+						"required": true,
+						"in": "query",
+						"description": "Valor da chave PIX (email, CPF, telefone, etc)",
+						"schema": {
+							"example": "user@example.com",
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Chave PIX encontrada com dados da conta",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"id": {
+											"type": "string",
+											"format": "uuid"
+										},
+										"key": {
+											"type": "string"
+										},
+										"accountId": {
+											"type": "string",
+											"format": "uuid"
+										},
+										"accountNumber": {
+											"type": "string"
+										},
+										"recipientName": {
+											"type": "string"
+										},
+										"createdAt": {
+											"type": "string",
+											"format": "date-time"
+										}
+									}
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Chave PIX não encontrada"
+					}
+				},
+				"summary": "Buscar chave PIX por valor",
+				"tags": ["Account Keys"]
+			}
+		},
+		"/account-key/{id}": {
+			"get": {
+				"description": "Retorna uma chave PIX específica pelo seu ID",
+				"operationId": "AccountKeyController_findOne",
+				"parameters": [
+					{
+						"name": "id",
+						"required": true,
+						"in": "path",
+						"description": "UUID da chave PIX",
+						"schema": {
+							"format": "uuid",
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Chave PIX encontrada",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/AccountKeyResponseDto"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Chave PIX não encontrada"
+					}
+				},
+				"summary": "Buscar chave PIX por ID",
+				"tags": ["Account Keys"]
+			},
+			"patch": {
+				"description": "Atualiza o valor de uma chave PIX existente",
+				"operationId": "AccountKeyController_update",
+				"parameters": [
+					{
+						"name": "id",
+						"required": true,
+						"in": "path",
+						"description": "UUID da chave PIX",
+						"schema": {
+							"format": "uuid",
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/UpdateAccountKeyDto"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Chave PIX atualizada com sucesso",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/AccountKeyResponseDto"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Chave PIX não encontrada"
+					}
+				},
+				"summary": "Atualizar chave PIX",
+				"tags": ["Account Keys"]
+			},
+			"delete": {
+				"description": "Remove uma chave PIX (exclusão lógica)",
+				"operationId": "AccountKeyController_remove",
+				"parameters": [
+					{
+						"name": "id",
+						"required": true,
+						"in": "path",
+						"description": "UUID da chave PIX",
+						"schema": {
+							"format": "uuid",
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Chave PIX removida com sucesso"
+					},
+					"404": {
+						"description": "Chave PIX não encontrada"
+					}
+				},
+				"summary": "Remover chave PIX",
+				"tags": ["Account Keys"]
+			}
 		}
 	},
 	"info": {
@@ -840,6 +1100,30 @@
 				},
 				"required": ["refreshToken"]
 			},
+			"AccountInfoDto": {
+				"type": "object",
+				"properties": {
+					"accountNumber": {
+						"type": "string",
+						"example": "1234567890",
+						"description": "Número da conta bancária"
+					},
+					"balance": {
+						"type": "number",
+						"example": 100000,
+						"description": "Saldo da conta em centavos",
+						"minimum": 0
+					},
+					"accountKeys": {
+						"description": "Chaves PIX vinculadas à conta",
+						"type": "array",
+						"items": {
+							"type": "object"
+						}
+					}
+				},
+				"required": ["accountNumber", "balance"]
+			},
 			"UserResponseDto": {
 				"type": "object",
 				"properties": {
@@ -860,6 +1144,14 @@
 						"description": "Email do usuário",
 						"format": "email"
 					},
+					"account": {
+						"description": "Informações da conta bancária do usuário",
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/AccountInfoDto"
+							}
+						]
+					},
 					"createdAt": {
 						"type": "string",
 						"example": "2024-10-16T00:00:00Z",
@@ -871,9 +1163,20 @@
 						"example": "2024-10-16T00:00:00Z",
 						"description": "Data da última atualização do usuário",
 						"format": "date-time"
+					},
+					"tokenCount": {
+						"type": "number",
+						"example": 10,
+						"description": "Quantidade de tokens disponíveis para o usuário"
+					},
+					"usedTokenAt": {
+						"type": "string",
+						"example": "2024-10-20T12:34:56Z",
+						"description": "Data e hora do último token consumido pelo usuário",
+						"format": "date-time"
 					}
 				},
-				"required": ["id", "name", "email", "createdAt", "updatedAt"]
+				"required": ["id", "name", "email", "tokenCount", "usedTokenAt"]
 			},
 			"CreateAccountDto": {
 				"type": "object",
@@ -886,6 +1189,29 @@
 					}
 				},
 				"required": ["balance"]
+			},
+			"AccountKeyDto": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string",
+						"example": "550e8400-e29b-41d4-a716-446655440003",
+						"description": "UUID único da chave",
+						"format": "uuid"
+					},
+					"key": {
+						"type": "string",
+						"example": "user@email.com",
+						"description": "Chave PIX"
+					},
+					"createdAt": {
+						"type": "string",
+						"example": "2024-10-16T00:00:00Z",
+						"description": "Data de criação da chave",
+						"format": "date-time"
+					}
+				},
+				"required": ["id", "key", "createdAt"]
 			},
 			"AccountResponseDto": {
 				"type": "object",
@@ -912,6 +1238,13 @@
 						"example": 100000,
 						"description": "Saldo da conta em centavos",
 						"minimum": 0
+					},
+					"accountKeys": {
+						"description": "Chaves PIX vinculadas à conta",
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/AccountKeyDto"
+						}
 					},
 					"createdAt": {
 						"type": "string",
@@ -954,14 +1287,13 @@
 						"description": "UUID da conta remetente (de onde o dinheiro será debitado)",
 						"format": "uuid"
 					},
-					"receiverId": {
+					"receiverKey": {
 						"type": "string",
-						"example": "cdf7b6eb-adeb-4df1-a64e-3faeae120628",
-						"description": "UUID da conta destinatária (para onde o dinheiro será creditado)",
-						"format": "uuid"
+						"example": "receiver@email.com",
+						"description": "Chave PIX da conta destinatária (para onde o dinheiro será creditado)"
 					}
 				},
-				"required": ["amount", "senderId", "receiverId"]
+				"required": ["amount", "senderId", "receiverKey"]
 			},
 			"CreateTransactionResponseDto": {
 				"type": "object",
@@ -1017,7 +1349,7 @@
 					"status": {
 						"type": "string",
 						"example": "pending",
-						"enum": ["recused", "approved", "pending"],
+						"enum": ["rejected", "approved", "pending"],
 						"description": "Status da transação"
 					},
 					"createdAt": {
@@ -1062,11 +1394,10 @@
 						"description": "UUID da conta remetente (de onde o dinheiro será debitado)",
 						"format": "uuid"
 					},
-					"receiverId": {
+					"receiverKey": {
 						"type": "string",
-						"example": "cdf7b6eb-adeb-4df1-a64e-3faeae120628",
-						"description": "UUID da conta destinatária (para onde o dinheiro será creditado)",
-						"format": "uuid"
+						"example": "receiver@email.com",
+						"description": "Chave PIX da conta destinatária (para onde o dinheiro será creditado)"
 					},
 					"transactionId": {
 						"type": "string",
@@ -1075,7 +1406,64 @@
 						"format": "uuid"
 					}
 				},
-				"required": ["amount", "senderId", "receiverId", "transactionId"]
+				"required": ["amount", "senderId", "receiverKey", "transactionId"]
+			},
+			"CreateAccountKeyDto": {
+				"type": "object",
+				"properties": {
+					"accountId": {
+						"type": "string",
+						"example": "550e8400-e29b-41d4-a716-446655440000",
+						"description": "UUID da conta à qual a chave PIX será vinculada",
+						"format": "uuid"
+					},
+					"key": {
+						"type": "string",
+						"example": "user@email.com",
+						"description": "Chave PIX (email, telefone, CPF, CNPJ ou chave aleatória)"
+					}
+				},
+				"required": ["accountId", "key"]
+			},
+			"AccountKeyResponseDto": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string",
+						"example": "550e8400-e29b-41d4-a716-446655440003",
+						"description": "UUID único da chave PIX",
+						"format": "uuid"
+					},
+					"key": {
+						"type": "string",
+						"example": "user@email.com",
+						"description": "Chave PIX (email, telefone, CPF, CNPJ ou chave aleatória)"
+					},
+					"accountId": {
+						"type": "string",
+						"example": "550e8400-e29b-41d4-a716-446655440000",
+						"description": "UUID da conta à qual a chave está vinculada",
+						"format": "uuid"
+					},
+					"createdAt": {
+						"type": "string",
+						"example": "2024-10-16T00:00:00Z",
+						"description": "Data de criação da chave PIX",
+						"format": "date-time"
+					}
+				},
+				"required": ["id", "key", "accountId", "createdAt"]
+			},
+			"UpdateAccountKeyDto": {
+				"type": "object",
+				"properties": {
+					"key": {
+						"type": "string",
+						"example": "newuser@email.com",
+						"description": "Nova chave PIX"
+					}
+				},
+				"required": ["key"]
 			}
 		}
 	},

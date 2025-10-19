@@ -1,29 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import {
-	IsNotEmpty,
-	IsNumber,
-	IsString,
-	IsUUID,
-	Min,
-	Validate,
-	ValidationArguments,
-	ValidatorConstraint,
-	ValidatorConstraintInterface,
-} from "class-validator";
-
-@ValidatorConstraint({ name: "IsNotEqualTo", async: false })
-export class IsNotEqualToConstraint implements ValidatorConstraintInterface {
-	validate(value: any, args: ValidationArguments) {
-		const [relatedPropertyName] = args.constraints;
-		const relatedValue = (args.object as any)[relatedPropertyName];
-		return value !== relatedValue;
-	}
-
-	defaultMessage(args: ValidationArguments) {
-		const [relatedPropertyName] = args.constraints;
-		return `${args.property} não pode ser igual a ${relatedPropertyName}`;
-	}
-}
+import { IsNotEmpty, IsNumber, IsString, IsUUID, Min } from "class-validator";
 
 export class CreateTransactionDto {
 	@ApiProperty({
@@ -51,18 +27,13 @@ export class CreateTransactionDto {
 	senderId: string;
 
 	@ApiProperty({
-		example: "cdf7b6eb-adeb-4df1-a64e-3faeae120628",
+		example: "receiver@email.com",
 		description:
-			"UUID da conta destinatária (para onde o dinheiro será creditado)",
-		format: "uuid",
+			"Chave PIX da conta destinatária (para onde o dinheiro será creditado)",
 	})
-	@IsNotEmpty({ message: "receiverId não pode estar vazio" })
-	@IsString({ message: "receiverId deve ser uma string válida" })
-	@IsUUID("4", { message: "receiverId deve ser um UUID válido" })
-	@Validate(IsNotEqualToConstraint, ["senderId"], {
-		message: "receiverId não pode ser igual a senderId",
-	})
-	receiverId: string;
+	@IsNotEmpty({ message: "receiverKey não pode estar vazia" })
+	@IsString({ message: "receiverKey deve ser uma string válida" })
+	receiverKey: string;
 }
 
 export class UpdateTransactionDto extends CreateTransactionDto {

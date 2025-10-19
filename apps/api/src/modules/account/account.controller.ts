@@ -226,4 +226,30 @@ export class AccountController {
 	remove(@Param("id") id: string) {
 		return this.accountService.remove(id);
 	}
+
+	@Post(":id/loan")
+	@ApiParam({
+		name: "id",
+		description: "UUID da conta para a qual o empréstimo está sendo solicitado",
+		example: "550e8400-e29b-41d4-a716-446655440000",
+	})
+	@ApiOperation({
+		summary: "Solicita um empréstimo para uma conta",
+		description: "Aprova um empréstimo e atualiza o saldo da conta",
+	})
+	@ApiResponse({
+		status: 200,
+		description: "Empréstimo aprovado e saldo atualizado com sucesso",
+	})
+	@ApiResponse({
+		status: 401,
+		description: "Token JWT ausente ou inválido",
+	})
+	@ApiResponse({
+		status: 404,
+		description: "Conta não encontrada",
+	})
+	loanRequest(@Param("id") id: string) {
+		return this.accountService.loanRequest(id);
+	}
 }

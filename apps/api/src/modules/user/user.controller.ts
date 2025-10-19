@@ -40,7 +40,7 @@ export class UserController {
 	@ApiResponse({
 		status: 200,
 		description: "Lista de usuários retornada com sucesso",
-		type: UserResponseDto,
+		type: [UserResponseDto],
 	})
 	@ApiResponse({
 		status: 401,

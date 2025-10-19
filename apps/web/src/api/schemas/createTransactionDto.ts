@@ -14,6 +14,6 @@ export interface CreateTransactionDto {
 	amount: number;
 	/** UUID da conta remetente (de onde o dinheiro será debitado) */
 	senderId: string;
-	/** UUID da conta destinatária (para onde o dinheiro será creditado) */
-	receiverId: string;
+	/** Chave PIX da conta destinatária (para onde o dinheiro será creditado) */
+	receiverKey: string;
 }

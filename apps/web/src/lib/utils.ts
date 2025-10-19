@@ -1,5 +1,8 @@
+import axios from "axios";
 import { type ClassValue, clsx } from "clsx";
+import { toast } from "sonner";
 import { twMerge } from "tailwind-merge";
+import type { ApiErrorResponse } from "@/api/axiosClient";
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
@@ -37,3 +40,18 @@ export const moneyToString = (valueInCents: number | null | undefined) => {
 		maximumFractionDigits: 2,
 	}).format(value / 100);
 };
+
+export function getErrorMessage(error: unknown, fallback = "Algo deu errado") {
+	if (axios.isAxiosError(error)) {
+		const data = error.response?.data as ApiErrorResponse | undefined;
+		toast.error(data?.message || fallback);
+		return;
+	}
+
+	if ("message" in (error as Error)) {
+		toast.error((error as Error).message || fallback);
+		return;
+	}
+
+	toast.error(fallback);
+}

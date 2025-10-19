@@ -1,3 +1,4 @@
+import { generateAccoutNumber } from "@api/lib/utils";
 import {
 	ConflictException,
 	Injectable,
@@ -28,7 +29,7 @@ export class AccountService {
 			);
 		}
 
-		const randomAccountNumber = Math.floor(100000 + Math.random() * 900000);
+		const randomAccountNumber = generateAccoutNumber();
 
 		return this.prisma.account.create({
 			data: {
@@ -44,6 +45,13 @@ export class AccountService {
 			where: {
 				deletedAt: null,
 			},
+			include: {
+				accountKeys: {
+					where: {
+						deletedAt: null,
+					},
+				},
+			},
 		});
 	}
 
@@ -55,6 +63,16 @@ export class AccountService {
 				balance: true,
 				id: true,
 				userId: true,
+				accountKeys: {
+					where: {
+						deletedAt: null,
+					},
+					select: {
+						id: true,
+						key: true,
+						createdAt: true,
+					},
+				},
 			},
 		});
 	}
@@ -67,6 +85,16 @@ export class AccountService {
 				balance: true,
 				id: true,
 				userId: true,
+				accountKeys: {
+					where: {
+						deletedAt: null,
+					},
+					select: {
+						id: true,
+						key: true,
+						createdAt: true,
+					},
+				},
 			},
 		});
 
@@ -86,6 +114,16 @@ export class AccountService {
 				balance: true,
 				id: true,
 				userId: true,
+				accountKeys: {
+					where: {
+						deletedAt: null,
+					},
+					select: {
+						id: true,
+						key: true,
+						createdAt: true,
+					},
+				},
 			},
 		});
 	}
@@ -116,5 +154,25 @@ export class AccountService {
 		if (!account || account.deletedAt) {
 			throw new NotFoundException("Account não encontrada ou inativa");
 		}
+	}
+
+	async loanRequest(accountId: string) {
+		const account = await this.prisma.account.findUnique({
+			where: { id: accountId, deletedAt: null },
+		});
+		if (!account) {
+			throw new NotFoundException("Account não encontrada ou inativa");
+		}
+
+		await this.prisma.account.update({
+			where: { id: accountId },
+			data: {
+				balance: {
+					increment: 1000000, // Exemplo: adicionar R$1.000,00 ao saldo
+				},
+			},
+		});
+
+		return { message: "Empréstimo aprovado e saldo atualizado com sucesso." };
 	}
 }

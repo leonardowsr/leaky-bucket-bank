@@ -2,7 +2,7 @@
 
 import { LayoutGrid, LogOut, User, Wallet } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter } from "nextjs-toploader/app";
 import { useFindAllByUser } from "@/api/client/account/account";
 import { useFindMe } from "@/api/client/users/users";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";

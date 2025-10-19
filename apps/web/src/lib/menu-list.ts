@@ -39,7 +39,7 @@ export function getMenuList(_pathname: string): Group[] {
 				},
 				{
 					href: "/account",
-					label: "Contas",
+					label: "Minha conta",
 					icon: Settings,
 				},
 			],

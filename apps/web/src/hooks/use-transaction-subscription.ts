@@ -1,12 +1,8 @@
-import { useQueryClient } from "@tanstack/react-query";
-import { useEffect, useRef, useState } from "react";
-import { getSseQueryKey, useSse } from "@/api/client/transaction/transaction";
-import { SSE_URL } from "@/lib/constant";
+import { useEffect, useState } from "react";
+import { useSse } from "@/api/client/transaction/transaction";
 
 export const useTransactionSubscription = (transactionId: string | "") => {
 	const [isFinished, setIsFinished] = useState(false);
-	const queryClient = useQueryClient();
-	const eventSourceRef = useRef<EventSource | null>(null);
 
 	const {
 		data: transaction,
@@ -14,59 +10,32 @@ export const useTransactionSubscription = (transactionId: string | "") => {
 		isLoading,
 	} = useSse(transactionId, {
 		query: {
-			queryKey: [getSseQueryKey(transactionId)],
-			enabled: !!transactionId,
+			queryKey: ["transaction-sse", transactionId],
+			enabled: !!transactionId && !isFinished,
+			refetchInterval: false,
+			refetchOnWindowFocus: false,
+			refetchOnReconnect: false,
 		},
 	});
+
+	// Reseta isFinished quando transactionId muda
 	useEffect(() => {
-		if (!transactionId) {
-			return;
+		if (transactionId) {
+			setIsFinished(false);
 		}
+	}, [transactionId]);
 
-		const eventSource = new EventSource(SSE_URL(transactionId), {
-			withCredentials: true,
-		});
-
-		eventSourceRef.current = eventSource;
-
-		eventSource.addEventListener("TRANSACTION_UPDATE", (event) => {
-			try {
-				const updatedTransaction = JSON.parse(event.data);
-
-				queryClient.setQueryData(
-					[getSseQueryKey(transactionId)],
-					updatedTransaction,
-				);
-			} catch (e) {
-				console.error("Erro ao processar evento SSE:", e);
-			}
-		});
-
-		eventSource.onerror = (err) => {
-			console.error("Erro na conexão EventSource:", err);
-			eventSource.close();
-		};
-
-		return () => {
-			eventSource.close();
-		};
-	}, [queryClient, transactionId]);
-
+	// Marca como finalizado quando a transação não está mais pendente
 	useEffect(() => {
-		setIsFinished(false);
-	}, []);
-
-	useEffect(() => {
-		if (transaction && transaction.status !== "pending") {
-			eventSourceRef.current?.close();
+		if (transaction && transaction.status !== "pending" && !isFinished) {
 			setIsFinished(true);
 		}
-	}, [transaction]);
+	}, [transaction, isFinished]);
 
 	return {
 		transaction,
 		error,
-		isLoading,
+		isLoading: isLoading && !isFinished,
 		isFinished,
 	};
 };

@@ -69,7 +69,6 @@ async function bootstrap() {
 	// Gera o arquivo swagger.json
 	const outputPath = path.resolve(process.cwd(), "swagger.json");
 	fs.writeFileSync(outputPath, JSON.stringify(document, null, 2));
-	console.info(`📄 Swagger JSON gerado em: ${outputPath}`);
 
 	SwaggerModule.setup("api", app, document, {
 		swaggerOptions: {
@@ -78,8 +77,8 @@ async function bootstrap() {
 	});
 
 	await app.listen(configuration.port);
-	console.info("🚀 Servidor rodando em: http://localhost:3000");
-	console.info("📚 Swagger UI: http://localhost:3000/api");
-	console.info("🛠️  RabbitMQ Management: http://localhost:15672/");
+	console.info(`🚀 Servidor rodando em: http://localhost:3000 
+📚 Swagger UI: http://localhost:3000/api
+🛠️  RabbitMQ Management: http://localhost:15672/`);
 }
 bootstrap();
