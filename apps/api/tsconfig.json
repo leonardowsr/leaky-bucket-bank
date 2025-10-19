@@ -18,14 +18,14 @@
 		"strictNullChecks": true,
 		"forceConsistentCasingInFileNames": true,
 		"noImplicitAny": false,
-
 		"strictBindCallApply": false,
 		"noFallthroughCasesInSwitch": false,
 		"paths": {
 			"@db/*": ["prisma/*"],
 			"@api/*": ["src/*"],
 			"@modules/*": ["src/modules/*"]
-		}
+		},
+		"typeRoots": ["./node_modules/@types", "./src/@types"]
 	},
 	"exclude": ["node_modules", "dist", "prisma"]
 }
