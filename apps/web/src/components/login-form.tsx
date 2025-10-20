@@ -184,7 +184,7 @@ export function LoginForm({
 						</FieldGroup>
 					</form>
 				</CardContent>
-				<div className="border-t bg-gray-50 p-4">
+				<div className="border-t bg-gray-50 p-4 dark:bg-secondary">
 					<p className="text-sm">usuário de teste:</p>
 					<p className="text-sm">
 						leonardo@gmail.com{" "}
