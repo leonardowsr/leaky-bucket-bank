@@ -2,7 +2,15 @@ import { LoginForm } from "@/components/login-form";
 
 export default function LoginPage() {
 	return (
-		<div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
+		<div
+			className="absolute inset-0 z-0 flex min-h-svh w-full items-center justify-center p-6 md:p-10"
+			style={{
+				backgroundImage: `
+        radial-gradient(circle 600px at 0% 200px, #fed7aa, transparent),
+        radial-gradient(circle 600px at 100% 200px, #fed7aa, transparent)
+      `,
+			}}
+		>
 			<div className="w-full max-w-sm">
 				<LoginForm />
 			</div>

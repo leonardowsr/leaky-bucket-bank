@@ -69,7 +69,7 @@ export class AuthService {
 			const account = await ctx.account.create({
 				data: {
 					accountNumber: randomAccountNumber,
-					balance: 100,
+					balance: 1000000, // Saldo inicial de 10000.00
 					userId: user.id,
 				},
 			});

@@ -18,7 +18,6 @@ export class AccountService {
 			throw new NotFoundException("User não encontrado");
 		}
 
-		// Verificar se o usuário já possui uma conta
 		const existingAccount = await this.prisma.account.findUnique({
 			where: { userId },
 		});
@@ -33,7 +32,7 @@ export class AccountService {
 
 		return this.prisma.account.create({
 			data: {
-				accountNumber: randomAccountNumber.toString(),
+				accountNumber: randomAccountNumber,
 				userId: userId,
 				balance: createAccountDto.balance,
 			},

@@ -1,5 +1,4 @@
-import { configuration, Public } from "@api/config/configuration";
-import { COOKIE_OPTIONS } from "@api/lib/constants";
+import { Public } from "@api/config/configuration";
 import {
 	Body,
 	Controller,
@@ -43,17 +42,8 @@ export class AuthController {
 		status: 401,
 		description: "Usuário não autorizado",
 	})
-	async login(@Body() loginDto: LoginDto, @Res() res: Response) {
-		const { access_token, refresh_token } =
-			await this.authService.login(loginDto);
-
-		res.cookie("access_token", access_token, {
-			...COOKIE_OPTIONS,
-			maxAge: configuration.jwt.accessExpire,
-		});
-		res.cookie("refresh_token", refresh_token, COOKIE_OPTIONS);
-
-		return res.json({ success: true });
+	async login(@Body() loginDto: LoginDto) {
+		return await this.authService.login(loginDto);
 	}
 
 	@Public()
@@ -110,13 +100,7 @@ export class AuthController {
 					refreshToken: dto.refreshToken,
 				});
 
-			res.cookie("access_token", access_token, {
-				...COOKIE_OPTIONS,
-				maxAge: 60 * 60 * 1000, // 1 hora
-			});
-			res.cookie("refresh_token", newRefreshToken, COOKIE_OPTIONS);
-
-			return res.json({ success: true });
+			return res.json({ access_token, refresh_token: newRefreshToken });
 		} catch {
 			return res.status(401).json({ message: "Refresh token inválido" });
 		}

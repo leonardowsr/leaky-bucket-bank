@@ -7,6 +7,7 @@
 	"license": "UNLICENSED",
 	"scripts": {
 		"build": "nest build",
+		"seed": "bun prisma/seed.ts",
 		"format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
 		"start": "nest start",
 		"dev": "nest start --watch",
@@ -42,13 +43,14 @@
 		"rxjs": "^7.8.1"
 	},
 	"devDependencies": {
-		"@types/bun": "^1.2.6",
 		"@eslint/eslintrc": "^3.2.0",
 		"@eslint/js": "^9.18.0",
+		"@faker-js/faker": "^10.1.0",
 		"@nestjs/cli": "^11.0.0",
 		"@nestjs/schematics": "^11.0.0",
 		"@nestjs/testing": "^11.0.1",
 		"@types/bcrypt": "^6.0.0",
+		"@types/bun": "^1.2.6",
 		"@types/express": "^5.0.0",
 		"@types/jest": "^30.0.0",
 		"@types/node": "^22.10.7",

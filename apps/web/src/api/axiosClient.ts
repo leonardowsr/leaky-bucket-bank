@@ -49,11 +49,17 @@ axiosInstance.interceptors.response.use(
 		if (error.response?.status === 401 && originalRequest._retryCount < 2) {
 			originalRequest._retryCount += 1;
 			try {
-				await axios.post(
-					`${process.env.NEXT_PUBLIC_SERVER_URL}/auth/refresh-token`,
-					{ refreshToken: refreshToken },
-					{ withCredentials: true },
-				);
+				const refreshResponse = await fetch("/api/auth/refresh", {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify({ refreshToken }),
+				});
+
+				if (!refreshResponse.ok) {
+					window.location.href = "/api/logout";
+				}
 
 				return axiosClient(originalRequest);
 			} catch (refreshError) {

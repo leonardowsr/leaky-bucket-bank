@@ -2,10 +2,9 @@
 import { useForm } from "@tanstack/react-form";
 import Link from "next/link";
 import { useRouter } from "nextjs-toploader/app";
-import { useId } from "react";
+import { useId, useTransition } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
-import { useLogin } from "@/api/client/auth/auth";
 import { Button } from "@/components/ui/button";
 
 import {
@@ -37,17 +36,7 @@ export function LoginForm({
 	const router = useRouter();
 	const emailId = useId();
 	const passwordId = useId();
-
-	const loginMutation = useLogin({
-		mutation: {
-			onError(error) {
-				getErrorMessage(error, "Erro ao fazer login");
-			},
-			onSuccess() {
-				toast.success("Login realizado com sucesso!");
-			},
-		},
-	});
+	const [isPending, startTransition] = useTransition();
 
 	const validateField = (value: string, schema: z.ZodSchema) => {
 		const validation = schema.safeParse(value);
@@ -69,16 +58,31 @@ export function LoginForm({
 				return;
 			}
 
-			try {
-				await loginMutation.mutateAsync({
-					data: value,
-				});
+			startTransition(async () => {
+				try {
+					const response = await fetch("/api/auth/login", {
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json",
+						},
+						body: JSON.stringify(value),
+					});
 
-				router.push("/dashboard");
-			} catch (error) {
-				// Erro já é tratado no onError do mutation
-				console.error("Erro ao fazer login:", error);
-			}
+					if (!response.ok) {
+						const errorData = await response.json();
+						throw new Error(errorData.message || "Erro ao fazer login");
+					}
+
+					toast.success("Login realizado com sucesso!");
+					router.push("/dashboard");
+				} catch (error) {
+					getErrorMessage(error);
+				} finally {
+					startTransition(() => {
+						form.resetField("password");
+					});
+				}
+			});
 		},
 	});
 
@@ -159,12 +163,8 @@ export function LoginForm({
 								)}
 							</form.Field>
 							<Field>
-								<Button
-									type="submit"
-									disabled={loginMutation.isPending}
-									className="w-full"
-								>
-									{loginMutation.isPending ? "Entrando..." : "Entrar"}
+								<Button type="submit" disabled={isPending} className="w-full">
+									{isPending ? "Entrando..." : "Entrar"}
 								</Button>
 								<FieldDescription className="text-center">
 									Não tem uma conta?{" "}
