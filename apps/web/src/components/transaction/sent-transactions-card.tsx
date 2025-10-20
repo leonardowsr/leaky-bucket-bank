@@ -15,7 +15,9 @@ interface SentTransactionsCardProps {
 }
 
 export function SentTransactionsCard({ accountId }: SentTransactionsCardProps) {
-	const { data: transactions, isLoading } = useFindAllByAccount(accountId, {});
+	const { data: transactions, isLoading } = useFindAllByAccount(accountId, {
+		type: "sent",
+	});
 	return (
 		<Card>
 			<CardHeader>

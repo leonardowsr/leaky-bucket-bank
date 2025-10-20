@@ -19,7 +19,7 @@ export function ReceivedTransactionsCard({
 }: ReceivedTransactionsCardProps) {
 	const { data: transactions, isLoading } = useFindAllByAccount(accountId, {
 		type: "received",
-	} as unknown as Record<string, unknown>);
+	});
 
 	return (
 		<Card>
