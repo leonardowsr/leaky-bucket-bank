@@ -1,3 +1,5 @@
+import { LeakyBucketGuard } from "@api/guards/leaky-bucket.guard";
+import { LeakyBucketInterceptor } from "@api/guards/leaky-bucket.interceptor";
 import {
 	Body,
 	Controller,
@@ -8,6 +10,8 @@ import {
 	Post,
 	Query,
 	Req,
+	UseGuards,
+	UseInterceptors,
 } from "@nestjs/common";
 import {
 	ApiOperation,
@@ -87,6 +91,8 @@ export class AccountKeyController {
 		},
 	})
 	@ApiResponse({ status: 404, description: "Chave PIX não encontrada" })
+	@UseGuards(LeakyBucketGuard)
+	@UseInterceptors(LeakyBucketInterceptor)
 	findByKey(@Query("key") key: string) {
 		return this.accountKeyService.findByKey(key);
 	}

@@ -1,4 +1,4 @@
-import { useFindMeUser } from "@/api/client/users/users";
+import { getFindMeUserQueryKey, useFindMeUser } from "@/api/client/users/users";
 import { Button } from "./ui/button";
 import {
 	Card,
@@ -10,7 +10,17 @@ import {
 import { Skeleton } from "./ui/skeleton";
 
 export const TokenDisplay = () => {
-	const { data: user, isLoading, isError, refetch } = useFindMeUser();
+	const {
+		data: user,
+		isLoading,
+		isError,
+		refetch,
+	} = useFindMeUser({
+		query: {
+			refetchInterval: 10000, // atualizar a cada 10 segundos
+			queryKey: getFindMeUserQueryKey(),
+		},
+	});
 
 	if (isLoading) {
 		<LoadingSkeleton />;
@@ -43,7 +53,9 @@ export const TokenDisplay = () => {
 						• Cada requisição consome 1 token, se a requisição for bem-sucedida,
 						o token é restaurado (não é consumido)
 					</p>
-					<p>• Os tokens são recarregados gradualmente com o tempo</p>
+					<p>
+						• O token é gradualmente restaurado, <b>1 por hora</b>
+					</p>
 					<p>
 						• Se todos os tokens forem consumidos, você receberá um mensagem de
 						erro.

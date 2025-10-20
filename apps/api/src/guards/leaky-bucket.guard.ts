@@ -1,5 +1,11 @@
 import { PrismaService } from "@api/modules/_prisma/prisma.service";
-import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
+import {
+	CanActivate,
+	ExecutionContext,
+	HttpException,
+	HttpStatus,
+	Injectable,
+} from "@nestjs/common";
 import { Request } from "express";
 
 @Injectable()
@@ -7,7 +13,6 @@ export class LeakyBucketGuard implements CanActivate {
 	constructor(private readonly prisma: PrismaService) {}
 	async canActivate(context: ExecutionContext) {
 		const request = context.switchToHttp().getRequest<Request>();
-
 		const userId = request?.user?.sub;
 
 		const user = await this.prisma.user.findUnique({
@@ -19,9 +24,11 @@ export class LeakyBucketGuard implements CanActivate {
 		}
 
 		const { tokenCount, usedTokenAt } = user;
-
 		if (!checkIfHasTokens(tokenCount, usedTokenAt)) {
-			return false;
+			throw new HttpException(
+				"Limite de requisições excedido. Tente novamente mais tarde.",
+				HttpStatus.TOO_MANY_REQUESTS, // 429
+			);
 		}
 
 		return true;

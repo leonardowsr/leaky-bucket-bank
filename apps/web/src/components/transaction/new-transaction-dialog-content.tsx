@@ -1,9 +1,11 @@
+/** biome-ignore-all lint/correctness/noChildrenProp: <explanation> */
 "use client";
 
 import { useForm } from "@tanstack/react-form";
 import { useQueryClient } from "@tanstack/react-query";
 import { Check } from "lucide-react";
 import { useEffect, useState } from "react";
+import * as z from "zod";
 import {
 	getFindMeAccountQueryKey,
 	useFindMeAccount,
@@ -25,10 +27,10 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { useTransactionSubscription } from "@/hooks/use-transaction-subscription";
 import { getErrorMessage, moneyToString } from "@/lib/utils";
+import { Field, FieldError, FieldLabel } from "../ui/field";
 import { TransactionProgress } from "./loading-transaction";
 
 interface NewTransactionDialogContentProps {
@@ -40,6 +42,39 @@ interface RecipientInfo {
 	recipientName: string;
 	receiverKey: string;
 }
+
+// validators={{
+// 	onChange: ({ value }) => {
+
+// 	},
+// }}
+
+const formSchema = z.object({
+	receiverKey: z
+		.string("Digite a chave PIX do destinatário")
+		.min(3, "Chave muito curta")
+		.max(100, "Chave muito longa"),
+	amount: z
+		.string()
+		.nonempty("Digite o valor a ser transferido")
+		.refine((val) => {
+			// 		if (!value) return "Valor é obrigatório";
+			// 		const num = Number.parseFloat(value);
+			// 		if (Number.isNaN(num) || num <= 0)
+			// 			return "Digite um valor válido";
+			// 		if (num * 100 > (meAccount?.balance ?? 0)) {
+			// 			return "Saldo insuficiente";
+			// 		}
+			// 		return undefined;
+
+			const num = Number.parseFloat(val);
+
+			if (Number.isNaN(num) || num <= 0) {
+				return "teste";
+			}
+			return true;
+		}),
+});
 
 export function NewTransactionDialogContent({
 	onClose,
@@ -54,7 +89,11 @@ export function NewTransactionDialogContent({
 	const queryClient = useQueryClient();
 	const { data: meAccount } = useFindMeAccount();
 
-	const { data: accountKeyData, isFetching: isFetchingKey } = useFindByKey(
+	const {
+		data: accountKeyData,
+		isFetching: isFetchingKey,
+		error: accountKeyError,
+	} = useFindByKey(
 		{ key: searchKey },
 		{
 			query: {
@@ -72,6 +111,10 @@ export function NewTransactionDialogContent({
 
 	const form = useForm({
 		defaultValues: { receiverKey: "", amount: "" },
+		validators: {
+			onChangeAsync: formSchema,
+			onChangeAsyncDebounceMs: 500,
+		},
 		onSubmit: async ({ value }) => {
 			if (step === 1) {
 				if (!value.receiverKey) return;
@@ -82,6 +125,7 @@ export function NewTransactionDialogContent({
 					);
 					return;
 				}
+
 				setSearchKey(value.receiverKey);
 			} else {
 				if (!senderId) {
@@ -121,9 +165,27 @@ export function NewTransactionDialogContent({
 			setStep(2);
 			setSearchKey("");
 		}
-	}, [accountKeyData, searchKey, isFetchingKey]);
+		if (!isFetchingKey && accountKeyError) {
+			const error = accountKeyError as {
+				statusCode?: number;
+				message?: string;
+			};
+			if (error.statusCode === 404) {
+				form.setFieldMeta("receiverKey", (prev) => ({
+					...prev,
+					isTouched: true,
+					errors: ["Chave PIX não encontrada"],
+				}));
+				form.setErrorMap({
+					onChange: {
+						fields: { receiverKey: "Chave PIX não encontrada" },
+					},
+				});
+			}
+			getErrorMessage(accountKeyError, "Destinatário da chave não encontrado");
+		}
+	}, [accountKeyData, searchKey, isFetchingKey, accountKeyError, form]);
 
-	// Fecha automaticamente após finalizar (sem estados extras)
 	useEffect(() => {
 		if (!transactionId || !isFinished) return;
 		queryClient.invalidateQueries({ queryKey: getFindMeAccountQueryKey() });
@@ -201,66 +263,70 @@ export function NewTransactionDialogContent({
 						<>
 							<form.Field
 								name="receiverKey"
-								validators={{
-									onChange: ({ value }) =>
-										!value ? "Digite a chave PIX do destinatário" : undefined,
+								children={(field) => {
+									const isInvalid =
+										field.state.meta.isTouched && !field.state.meta.isValid;
+
+									return (
+										<Field data-invalid={isInvalid}>
+											<FieldLabel htmlFor={field.name}>
+												Chave PIX do destinatário
+											</FieldLabel>
+											<Input
+												id={field.name}
+												name={field.name}
+												onBlur={field.handleBlur}
+												placeholder="email@exemplo.com, CPF, telefone..."
+												value={field.state.value}
+												aria-invalid={isInvalid}
+												autoComplete="off"
+												onChange={(e) => field.handleChange(e.target.value)}
+											/>
+
+											{Boolean(accountKeyError) &&
+												searchKey === form.state.values.receiverKey && (
+													<FieldError
+														errors={[accountKeyError ?? { message: "" }]}
+													/>
+												)}
+											{isInvalid && (
+												<FieldError errors={field.state.meta.errors} />
+											)}
+										</Field>
+									);
 								}}
-							>
-								{(field) => (
-									<div className="space-y-2">
-										<Label htmlFor={field.name}>
-											Chave PIX do destinatário
-										</Label>
-										<Input
-											id={field.name}
-											placeholder="email@exemplo.com, CPF, telefone..."
-											value={field.state.value}
-											onChange={(e) => field.handleChange(e.target.value)}
-										/>
-										{field.state.meta.errors?.length > 0 && (
-											<p className="text-red-500 text-sm">
-												{field.state.meta.errors[0]}
-											</p>
-										)}
-									</div>
-								)}
-							</form.Field>
+							/>
 
 							<form.Field
 								name="amount"
-								validators={{
-									onChange: ({ value }) => {
-										if (!value) return "Valor é obrigatório";
-										const num = Number.parseFloat(value);
-										if (Number.isNaN(num) || num <= 0)
-											return "Digite um valor válido";
-										if (num * 100 > (meAccount?.balance ?? 0)) {
-											return "Saldo insuficiente";
-										}
-										return undefined;
-									},
+								children={(field) => {
+									const isInvalid =
+										field.state.meta.isTouched && !field.state.meta.isValid;
+
+									return (
+										<Field className="space-y-2" data-invalid={isInvalid}>
+											<FieldLabel htmlFor={field.name}>
+												Valor (em R$)
+											</FieldLabel>
+											<Input
+												id={field.name}
+												type="number"
+												step="0.01"
+												aria-invalid={isInvalid}
+												onBlur={field.handleBlur}
+												min="0"
+												placeholder="0,00"
+												value={field.state.value}
+												onChange={(e) => field.handleChange(e.target.value)}
+											/>
+
+											{isInvalid && (
+												<FieldError errors={field.state.meta.errors} />
+											)}
+										</Field>
+									);
 								}}
-							>
-								{(field) => (
-									<div className="space-y-2">
-										<Label htmlFor={field.name}>Valor (em R$)</Label>
-										<Input
-											id={field.name}
-											type="number"
-											step="0.01"
-											min="0"
-											placeholder="0,00"
-											value={field.state.value}
-											onChange={(e) => field.handleChange(e.target.value)}
-										/>
-										{field.state.meta.errors?.length > 0 && (
-											<p className="text-red-500 text-sm">
-												{field.state.meta.errors[0]}
-											</p>
-										)}
-									</div>
-								)}
-							</form.Field>
+							/>
 						</>
 					) : (
 						<div className="space-y-4 rounded-lg border p-4">

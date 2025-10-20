@@ -67,7 +67,7 @@ export class AccountKeyService {
 		});
 
 		if (!accountKey) {
-			throw new NotFoundException("Chave pix não encontrada");
+			throw new NotFoundException("Destinatário da chave não encontrado");
 		}
 
 		return {

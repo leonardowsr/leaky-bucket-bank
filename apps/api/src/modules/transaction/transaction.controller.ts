@@ -1,5 +1,6 @@
 import { configuration } from "@api/config/configuration";
 import { LeakyBucketGuard } from "@api/guards/leaky-bucket.guard";
+import { LeakyBucketInterceptor } from "@api/guards/leaky-bucket.interceptor";
 import {
 	Body,
 	Controller,
@@ -13,6 +14,7 @@ import {
 	Query,
 	Sse,
 	UseGuards,
+	UseInterceptors,
 } from "@nestjs/common";
 import { ClientProxy } from "@nestjs/microservices";
 import {
@@ -38,6 +40,7 @@ import { TransactionService } from "./transaction.service";
 @ApiTags("Transaction")
 @ApiBearerAuth("JWT-auth")
 @UseGuards(LeakyBucketGuard)
+@UseInterceptors(LeakyBucketInterceptor)
 @Controller("transaction")
 export class TransactionController {
 	constructor(
