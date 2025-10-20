@@ -1,5 +1,7 @@
 "use client";
 
+import { Github } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 import { SheetMenu } from "@/components/admin-panel/sheet-menu";
 import { UserNav } from "@/components/admin-panel/user-nav";
@@ -19,7 +21,17 @@ export function Navbar({ title }: NavbarProps) {
 					<SheetMenu />
 					<h1 className="font-bold">{title}</h1>
 				</div>
-
+				<div>
+					<Link
+						href="https://github.com/leonardowsr/leaky-bucket-bank"
+						target="_blank"
+						rel="noreferrer"
+						className="ml-4 flex items-center gap-2 rounded-md border px-3 py-2 font-medium text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
+					>
+						<Github />
+						<span className="hidden sm:block">Acessar projeto no github</span>
+					</Link>
+				</div>
 				<div className="flex flex-1 items-center justify-end">
 					<ModeToggle />
 					<UserNav />

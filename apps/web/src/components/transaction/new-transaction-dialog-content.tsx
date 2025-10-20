@@ -18,6 +18,7 @@ import {
 	getFindAllByAccountQueryKey,
 	useCreate,
 } from "@/api/client/transaction/transaction";
+import { getFindAllQueryKey } from "@/api/client/users/users";
 import { Button } from "@/components/ui/button";
 import {
 	DialogContent,
@@ -31,6 +32,7 @@ import { Separator } from "@/components/ui/separator";
 import { useTransactionSubscription } from "@/hooks/use-transaction-subscription";
 import { getErrorMessage, moneyToString } from "@/lib/utils";
 import { Field, FieldError, FieldLabel } from "../ui/field";
+import { MaskInput } from "../ui/mask-input";
 import { TransactionProgress } from "./loading-transaction";
 
 interface NewTransactionDialogContentProps {
@@ -43,37 +45,22 @@ interface RecipientInfo {
 	receiverKey: string;
 }
 
-// validators={{
-// 	onChange: ({ value }) => {
-
-// 	},
-// }}
-
 const formSchema = z.object({
 	receiverKey: z
 		.string("Digite a chave PIX do destinatário")
-		.min(3, "Chave muito curta")
-		.max(100, "Chave muito longa"),
+		.min(1, "Digite a chave PIX do destinatário"),
 	amount: z
 		.string()
 		.nonempty("Digite o valor a ser transferido")
-		.refine((val) => {
-			// 		if (!value) return "Valor é obrigatório";
-			// 		const num = Number.parseFloat(value);
-			// 		if (Number.isNaN(num) || num <= 0)
-			// 			return "Digite um valor válido";
-			// 		if (num * 100 > (meAccount?.balance ?? 0)) {
-			// 			return "Saldo insuficiente";
-			// 		}
-			// 		return undefined;
-
-			const num = Number.parseFloat(val);
-
-			if (Number.isNaN(num) || num <= 0) {
-				return "teste";
-			}
-			return true;
-		}),
+		.refine(
+			(val) => {
+				const num = Number.parseFloat(val);
+				return !Number.isNaN(num) && num > 0;
+			},
+			{
+				message: "Digite um valor válido",
+			},
+		),
 });
 
 export function NewTransactionDialogContent({
@@ -189,6 +176,7 @@ export function NewTransactionDialogContent({
 	useEffect(() => {
 		if (!transactionId || !isFinished) return;
 		queryClient.invalidateQueries({ queryKey: getFindMeAccountQueryKey() });
+		queryClient.invalidateQueries({ queryKey: getFindAllQueryKey() });
 		queryClient.invalidateQueries({
 			queryKey: getFindAllByAccountQueryKey(meAccount?.id),
 		});
@@ -299,6 +287,21 @@ export function NewTransactionDialogContent({
 
 							<form.Field
 								name="amount"
+								validators={{
+									onChange: ({ value }) => {
+										const num = Number.parseFloat(value);
+										if (meAccount && !Number.isNaN(num)) {
+											const amountInCentavos = Math.round(num * 100);
+											if (amountInCentavos > meAccount.balance) {
+												return {
+													message: "Saldo insuficiente para esta transação",
+												};
+											}
+										}
+
+										return undefined;
+									},
+								}}
 								children={(field) => {
 									const isInvalid =
 										field.state.meta.isTouched && !field.state.meta.isValid;
@@ -308,7 +311,16 @@ export function NewTransactionDialogContent({
 											<FieldLabel htmlFor={field.name}>
 												Valor (em R$)
 											</FieldLabel>
-											<Input
+											<MaskInput
+												mask={"currency"}
+												onBlur={field.handleBlur}
+												name={field.name}
+												aria-invalid={isInvalid}
+												placeholder="R$ 0,00"
+												value={field.state.value}
+												onValueChange={(_, value) => field.handleChange(value)}
+											/>
+											{/* <Input
 												id={field.name}
 												type="number"
 												step="0.01"
@@ -318,8 +330,7 @@ export function NewTransactionDialogContent({
 												placeholder="0,00"
 												value={field.state.value}
 												onChange={(e) => field.handleChange(e.target.value)}
-											/>
-
+											/> */}
 											{isInvalid && (
 												<FieldError errors={field.state.meta.errors} />
 											)}

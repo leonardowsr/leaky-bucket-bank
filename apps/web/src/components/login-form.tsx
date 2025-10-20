@@ -1,12 +1,12 @@
 "use client";
 import { useForm } from "@tanstack/react-form";
+import { Check, Copy } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "nextjs-toploader/app";
-import { useId, useTransition } from "react";
+import { useId, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
-
 import {
 	Card,
 	CardContent,
@@ -37,6 +37,8 @@ export function LoginForm({
 	const emailId = useId();
 	const passwordId = useId();
 	const [isPending, startTransition] = useTransition();
+	const [copiedEmail, setCopiedEmail] = useState(false);
+	const [copiedPassword, setCopiedPassword] = useState(false);
 
 	const validateField = (value: string, schema: z.ZodSchema) => {
 		const validation = schema.safeParse(value);
@@ -85,6 +87,9 @@ export function LoginForm({
 			});
 		},
 	});
+
+	const IconEmail = copiedEmail ? Check : Copy;
+	const IconPassword = copiedPassword ? Check : Copy;
 
 	return (
 		<div className={cn("flex flex-col gap-6", className)} {...props}>
@@ -179,6 +184,33 @@ export function LoginForm({
 						</FieldGroup>
 					</form>
 				</CardContent>
+				<div className="border-t bg-gray-50 p-4">
+					<p className="text-sm">usuário de teste:</p>
+					<p className="text-sm">
+						leonardo@gmail.com{" "}
+						<IconEmail
+							className="mb-0.5 ml-1 inline-block"
+							size={12}
+							onClick={() => {
+								setCopiedPassword(false);
+								navigator.clipboard.writeText("leonardo@gmail.com");
+								setCopiedEmail(true);
+							}}
+						/>
+					</p>
+					<p className="text-sm">
+						12345678{" "}
+						<IconPassword
+							className="mb-0.5 ml-1 inline-block"
+							size={12}
+							onClick={() => {
+								setCopiedEmail(false);
+								navigator.clipboard.writeText("12345678");
+								setCopiedPassword(true);
+							}}
+						/>
+					</p>
+				</div>
 			</Card>
 		</div>
 	);
