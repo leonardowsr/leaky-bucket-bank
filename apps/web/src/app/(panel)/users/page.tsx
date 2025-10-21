@@ -17,14 +17,6 @@ import {
 } from "@/components/ui/table";
 import { moneyToString } from "@/lib/utils";
 
-function maskEmail(email: string): string {
-	const [localPart, domain] = email.split("@");
-	if (!localPart || !domain) return email;
-
-	const maskedLocal = `${localPart.charAt(0)}***`;
-	return `${maskedLocal}@${domain}`;
-}
-
 export default function UsersPage() {
 	const [copiedtext, setCopiedText] = useState<string>("");
 	const { data: usersData = [], isLoading } = useFindAllUsers();
@@ -66,17 +58,13 @@ export default function UsersPage() {
 								return (
 									<TableRow key={user.id}>
 										<TableCell className="font-medium">{user.name}</TableCell>
-										<TableCell>{maskEmail(user.email)}</TableCell>
+										<TableCell>{user.email}</TableCell>
 										<TableCell className="font-medium">
 											{user.account?.accountNumber || "N/A"}
 										</TableCell>
 
 										<TableCell className="min-w-0">
-											{" "}
-											{/* Adiciona min-w-0 para permitir quebra de texto se necessário */}
 											<div className="flex flex-col gap-1">
-												{" "}
-												{/* Usa flex-col com gap para espaçamento controlado */}
 												{user.account?.accountKeys?.map((key, i) => {
 													const Icon =
 														copiedtext !== key.key ? Copy : CopyCheck;

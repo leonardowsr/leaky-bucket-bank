@@ -5,7 +5,7 @@ import { AccountService } from "./account.service";
 
 describe("AccountController", () => {
 	let controller: AccountController;
-	let service: AccountService;
+	let service: any;
 
 	beforeEach(async () => {
 		const mockAccountService = {
@@ -54,5 +54,19 @@ describe("AccountController", () => {
 		expect(() => controller.findMeAccount(mockRequest)).toThrow(
 			BadRequestException,
 		);
+	});
+
+	it("should process loan request", async () => {
+		const accountId = "account-id";
+		const result = {
+			message: "Empréstimo aprovado e saldo atualizado com sucesso.",
+		};
+
+		service.loanRequest.mockResolvedValue(result);
+
+		const response = await controller.loanRequest(accountId);
+
+		expect(service.loanRequest).toHaveBeenCalledWith(accountId);
+		expect(response).toEqual(result);
 	});
 });

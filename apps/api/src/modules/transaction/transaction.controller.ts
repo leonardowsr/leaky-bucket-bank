@@ -39,8 +39,6 @@ import { TransactionService } from "./transaction.service";
 
 @ApiTags("Transaction")
 @ApiBearerAuth("JWT-auth")
-@UseGuards(LeakyBucketGuard)
-@UseInterceptors(LeakyBucketInterceptor)
 @Controller("transaction")
 export class TransactionController {
 	constructor(
@@ -78,6 +76,8 @@ export class TransactionController {
 		status: 500,
 		description: "Erro ao enfileirar a transação no RabbitMQ",
 	})
+	@UseGuards(LeakyBucketGuard)
+	@UseInterceptors(LeakyBucketInterceptor)
 	async create(@Body() createTransactionDto: CreateTransactionDto) {
 		await this.transactionService.validateTransaction(createTransactionDto);
 		const transaction =

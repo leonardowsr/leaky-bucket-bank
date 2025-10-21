@@ -1,3 +1,4 @@
+import { maskEmail } from "@api/lib/utils";
 import { PrismaService } from "@api/modules/_prisma/prisma.service";
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { UserQueryDto } from "./dto/user-query.dto";
@@ -41,6 +42,9 @@ export class UserService {
 				},
 			},
 		});
+		for (const user of users) {
+			user.email = maskEmail(user.email);
+		}
 		return users;
 	}
 
