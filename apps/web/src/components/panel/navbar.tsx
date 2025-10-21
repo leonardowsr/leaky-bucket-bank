@@ -3,9 +3,9 @@
 import { Github } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { SheetMenu } from "@/components/admin-panel/sheet-menu";
-import { UserNav } from "@/components/admin-panel/user-nav";
-import { ModeToggle } from "@/components/mode-toggle";
+import { SheetMenu } from "@/components/panel/sheet-menu";
+import { UserNav } from "@/components/panel/user-nav";
+import { ModeToggle } from "@/components/ui/mode-toggle";
 
 interface NavbarProps {
 	title: string;

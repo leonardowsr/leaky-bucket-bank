@@ -4,8 +4,8 @@ import { Copy, CopyCheck } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useFindAll as useFindAllUsers } from "@/api/client/users/users";
-import { ContentLayout } from "@/components/admin-panel/content-layout";
-import PlaceholderContent from "@/components/demo/placeholder-content";
+import PlaceholderContent from "@/components/layout/placeholder-content";
+import { ContentLayout } from "@/components/panel/content-layout";
 import { CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
 	Table,

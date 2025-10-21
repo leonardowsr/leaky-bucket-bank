@@ -1,6 +1,6 @@
 import { MenuIcon, PanelsTopLeft } from "lucide-react";
 import Link from "next/link";
-import { Menu } from "@/components/admin-panel/menu";
+import { Menu } from "@/components/panel/menu";
 import { Button } from "@/components/ui/button";
 import {
 	Sheet,

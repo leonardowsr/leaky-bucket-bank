@@ -4,8 +4,8 @@ import NextTopLoader from "nextjs-toploader";
 import "./index.css";
 
 import { Toaster } from "sonner";
+import { ReactQueryProvider } from "@/components/providers/react-query-provider";
 import { ThemeProvider } from "@/components/providers/theme-provider";
-import { ReactQueryProvider } from "@/components/react-query-provider";
 
 export const metadata: Metadata = {
 	title: "My App",

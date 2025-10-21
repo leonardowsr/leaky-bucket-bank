@@ -68,10 +68,9 @@ export class LeakyBucketInterceptor implements NestInterceptor {
 								.status(HttpStatus.TOO_MANY_REQUESTS)
 								.setHeader("Retry-After", retryAfter)
 								.json({
-									type: "https://bacen.gov.br/errors/rate-limit",
 									title: "Too Many Requests",
 									status: 429,
-									detail:
+									message:
 										"Limite de requisições excedido. Tente novamente mais tarde.",
 								});
 						}

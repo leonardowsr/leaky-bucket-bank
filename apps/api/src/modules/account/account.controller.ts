@@ -59,7 +59,7 @@ export class AccountController {
 		description: "Usuário já possui uma conta",
 	})
 	create(@Body() createAccountDto: CreateAccountDto, @Req() request: Request) {
-		const userId = request["user"].sub as string;
+		const userId = request["user"]?.sub as string;
 		if (!userId) {
 			throw new BadRequestException("User ID não fornecido");
 		}
@@ -104,7 +104,7 @@ export class AccountController {
 		description: "Conta não encontrada para o usuário",
 	})
 	findMeAccount(@Req() request: Request) {
-		const userId = request["user"].sub as string;
+		const userId = request["user"]?.sub as string;
 		if (!userId) {
 			throw new BadRequestException("User ID não fornecido");
 		}

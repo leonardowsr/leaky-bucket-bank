@@ -4,7 +4,7 @@ import { Ellipsis, LogOut } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRouter } from "nextjs-toploader/app";
-import { CollapseMenuButton } from "@/components/admin-panel/collapse-menu-button";
+import { CollapseMenuButton } from "@/components/panel/collapse-menu-button";
 import { NewTransactionDialog } from "@/components/transaction/new-transaction-dialog";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";

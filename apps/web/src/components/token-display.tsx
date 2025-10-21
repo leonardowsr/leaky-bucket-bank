@@ -1,4 +1,10 @@
+import { useState } from "react";
+import {
+	getFindByKeyQueryKey,
+	useFindByKey,
+} from "@/api/client/account-keys/account-keys";
 import { getFindMeUserQueryKey, useFindMeUser } from "@/api/client/users/users";
+import { getErrorMessage } from "@/lib/utils";
 import { Button } from "./ui/button";
 import {
 	Card,
@@ -10,6 +16,20 @@ import {
 import { Skeleton } from "./ui/skeleton";
 
 export const TokenDisplay = () => {
+	const [accountKey, setAccountKey] = useState(crypto.randomUUID());
+	const { refetch: accountKeyRefetch, isLoading: isLoadingAccountKey } =
+		useFindByKey(
+			{ key: accountKey },
+			{
+				query: {
+					queryKey: [...getFindByKeyQueryKey(), accountKey],
+					enabled: false,
+					retry: false,
+					retryOnMount: false,
+				},
+			},
+		);
+
 	const {
 		data: user,
 		isLoading,
@@ -40,8 +60,31 @@ export const TokenDisplay = () => {
 		<Card className="@container/card">
 			<CardHeader>
 				<CardDescription>Tokens usados</CardDescription>
-				<CardTitle className="font-semibold @[250px]/card:text-3xl text-2xl tabular-nums">
-					{isLoading ? "Carregando..." : `${user?.tokenCount} de 10`}
+				<CardTitle className="flex justify-between gap-2 font-semibold @[250px]/card:text-3xl text-2xl tabular-nums">
+					{isLoading ? (
+						<div className="flex items-center gap-2">
+							<Skeleton className="h-6 w-6" />
+							de 10
+						</div>
+					) : (
+						`${user?.tokenCount} de 10`
+					)}
+					<Button
+						disabled={isLoadingAccountKey || isLoading}
+						variant={"destructive"}
+						onClick={async () => {
+							const res = (await accountKeyRefetch({
+								cancelRefetch: true,
+							})) as { error?: string };
+
+							getErrorMessage(res.error, "Erro ao forçar erro");
+
+							refetch();
+							setAccountKey(crypto.randomUUID());
+						}}
+					>
+						{isLoadingAccountKey ? "Aguarde..." : "Forçar erro"}
+					</Button>
 				</CardTitle>
 			</CardHeader>
 			<CardFooter className="flex-col items-start gap-1.5 text-sm">
@@ -59,6 +102,19 @@ export const TokenDisplay = () => {
 					<p>
 						• Se todos os tokens forem consumidos, você receberá um mensagem de
 						erro.
+					</p>
+					<p className="mt-2">
+						Para ver como funciona a segurança do pix, consulte o DICT do Banco
+						Central:{" "}
+						<a
+							href="https://www.bcb.gov.br/content/estabilidadefinanceira/pix/API-DICT.html"
+							target="_blank"
+							rel="noopener noreferrer"
+							className="text-blue-500 underline"
+						>
+							{" "}
+							clique aqui
+						</a>
 					</p>
 				</div>
 			</CardFooter>

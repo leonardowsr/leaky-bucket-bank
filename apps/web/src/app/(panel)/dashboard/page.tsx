@@ -1,8 +1,8 @@
 "use client";
 import { TrendingUp } from "lucide-react";
 import { useFindMeAccount } from "@/api/client/account/account";
-import { ContentLayout } from "@/components/admin-panel/content-layout";
-import PlaceholderContent from "@/components/demo/placeholder-content";
+import PlaceholderContent from "@/components/layout/placeholder-content";
+import { ContentLayout } from "@/components/panel/content-layout";
 import { TokenDisplay } from "@/components/token-display";
 import { NewTransactionDialog } from "@/components/transaction/new-transaction-dialog";
 import { ReceivedTransactionsCard } from "@/components/transaction/received-transactions-card";
@@ -16,10 +16,11 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { moneyToString } from "@/lib/utils";
 
 export default function HomePage() {
-	const { data: account } = useFindMeAccount();
+	const { data: account, isLoading } = useFindMeAccount();
 	const accountId = account?.id;
 
 	return (
@@ -39,7 +40,11 @@ export default function HomePage() {
 						<CardHeader>
 							<CardDescription>Saldo disponível</CardDescription>
 							<CardTitle className="font-semibold @[250px]/card:text-3xl text-2xl tabular-nums">
-								{moneyToString(account?.balance)}
+								{isLoading ? (
+									<Skeleton className="h-6 w-20" />
+								) : (
+									moneyToString(account?.balance)
+								)}
 							</CardTitle>
 							<CardAction>
 								<Badge variant="outline">

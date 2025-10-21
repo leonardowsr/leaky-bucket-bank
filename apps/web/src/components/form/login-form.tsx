@@ -1,6 +1,6 @@
 "use client";
 import { useForm } from "@tanstack/react-form";
-import { Check, Copy } from "lucide-react";
+import { Check, Copy, Github } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "nextjs-toploader/app";
 import { useId, useState, useTransition } from "react";
@@ -11,6 +11,7 @@ import {
 	Card,
 	CardContent,
 	CardDescription,
+	CardFooter,
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
@@ -21,8 +22,8 @@ import {
 	FieldError,
 	FieldGroup,
 	FieldLabel,
-} from "./ui/field";
-import { Input } from "./ui/input";
+} from "../ui/field";
+import { Input } from "../ui/input";
 
 const loginSchema = z.object({
 	email: z.string().email("Email inválido"),
@@ -211,6 +212,19 @@ export function LoginForm({
 						/>
 					</p>
 				</div>
+				<CardFooter>
+					<div className="flex w-full justify-center">
+						<Link
+							href="https://github.com/leonardowsr/leaky-bucket-bank"
+							target="_blank"
+							rel="noreferrer"
+							className="bg flex items-center gap-2 rounded-md border px-3 py-2 font-medium text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
+						>
+							<Github />
+							<span className="hidden sm:block">Acessar projeto no github</span>
+						</Link>
+					</div>
+				</CardFooter>
 			</Card>
 		</div>
 	);

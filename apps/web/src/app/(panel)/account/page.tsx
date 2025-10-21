@@ -9,8 +9,8 @@ import {
 } from "@/api/client/account/account";
 import type { AccountResponseDto } from "@/api/schemas";
 import { PixKeysManager } from "@/components/account/pix-keys-manager";
-import { ContentLayout } from "@/components/admin-panel/content-layout";
-import PlaceholderContent from "@/components/demo/placeholder-content";
+import PlaceholderContent from "@/components/layout/placeholder-content";
+import { ContentLayout } from "@/components/panel/content-layout";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
